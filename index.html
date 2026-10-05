@@ -65,6 +65,24 @@
             background-color: #45b7af;
         }
     </style>
+
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1553479049427499');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1553479049427499&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
 </head>
 <body class="text-pastel-darkText antialiased selection:bg-pastel-pink selection:text-pastel-darkText">
 
@@ -98,7 +116,7 @@
             </p>
             
             <div class="mb-8">
-                <img src="12485108320039338130.jpeg" alt="فرحة الطفل بكتاب البطل" class="rounded-3xl shadow-lg mx-auto w-full max-w-lg object-cover">
+                <img src="12485108320039338130.jpeg" loading="lazy" alt="فرحة الطفل بكتاب البطل" class="rounded-3xl shadow-lg mx-auto w-full max-w-lg object-cover">
             </div>
 
             <div class="bg-white p-6 md:p-8 rounded-3xl shadow-soft max-w-2xl mx-auto border border-pastel-pink">
@@ -154,7 +172,7 @@
                 </div>
             </div>
             <div class="mt-12 text-center">
-                <img src="11613031302214857793.jpeg" alt="ساعة هدوء وتركيز" class="rounded-3xl shadow-lg mx-auto w-full max-w-2xl object-cover">
+                <img src="11613031302214857793.jpeg" loading="lazy" alt="ساعة هدوء وتركيز" class="rounded-3xl shadow-lg mx-auto w-full max-w-2xl object-cover">
             </div>
         </div>
     </section>
@@ -164,10 +182,10 @@
             <h3 class="text-3xl font-black text-center mb-6">مش مجرد كتاب تلوين، ده وقت ممتع هيجمعكم سوا! 👨‍👩‍👧‍👦</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
                 <div>
-                    <img src="16361305228076054200.jpeg" alt="الأب يشارك في التلوين" class="rounded-3xl shadow-md w-full object-cover">
+                    <img src="16361305228076054200.jpeg" loading="lazy" alt="الأب يشارك في التلوين" class="rounded-3xl shadow-md w-full object-cover">
                 </div>
                 <div>
-                    <img src="15420565529153825806.jpeg" alt="تلوين تفاصيل مخصصة" class="rounded-3xl shadow-md w-full object-cover">
+                    <img src="15420565529153825806.jpeg" loading="lazy" alt="تلوين تفاصيل مخصصة" class="rounded-3xl shadow-md w-full object-cover">
                 </div>
             </div>
         </div>
@@ -323,7 +341,7 @@
                     
                     <div class="mt-10 text-center">
                         <h4 class="text-xl font-bold text-gray-700 mb-4">فرحته متتوصفش لما يشوف نفسه بطل! 🥇</h4>
-                        <img src="14638396977287833697.jpeg" alt="طفل سعيد بالكتاب" class="rounded-3xl shadow-lg mx-auto w-full max-w-md object-cover">
+                        <img src="14638396977287833697.jpeg" loading="lazy" alt="طفل سعيد بالكتاب" class="rounded-3xl shadow-lg mx-auto w-full max-w-md object-cover">
                     </div>
                 </form>
             </div>
@@ -415,7 +433,6 @@
             const submitBtn = document.getElementById('submitBtn');
             const originalBtnText = submitBtn.innerHTML;
             
-            // تغيير شكل الزرار وتوقيفه عشان العميل ميكررش الطلب
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري رفع الصور وإرسال الطلب... يرجى الانتظار⏳';
             submitBtn.disabled = true;
 
@@ -433,50 +450,50 @@
             const notes = document.getElementById('custNotes') ? document.getElementById('custNotes').value : "لا يوجد";
             const totalPrice = document.getElementById('summaryTotalPrice').innerText;
 
-            const tgMessage = `🆕 *طلب جديد - كتاب البطل* 🆕\n\n` +
-                            `👤 *اسم ولي الأمر:* ${name}\n` +
-                            `👶 *اسم الطفل:* ${childName}\n` +
-                            `📱 *الموبايل:* ${phone}\n` +
-                            `📍 *المحافظة:* ${gov}\n` +
-                            `🏠 *العنوان:* ${address}\n` +
-                            `📦 *الباقة:* ${packageText}\n` +
-                            `💰 *الإجمالي:* ${totalPrice}\n` +
-                            `📝 *ملاحظات:* ${notes}`;
+            const tgMessage = `🆕 <b>طلب جديد - كتاب البطل</b> 🆕\n\n` +
+                            `👤 <b>اسم ولي الأمر:</b> ${name}\n` +
+                            `👶 <b>اسم الطفل:</b> ${childName}\n` +
+                            `📱 <b>الموبايل:</b> ${phone}\n` +
+                            `📍 <b>المحافظة:</b> ${gov}\n` +
+                            `🏠 <b>العنوان:</b> ${address}\n` +
+                            `📦 <b>الباقة:</b> ${packageText}\n` +
+                            `💰 <b>الإجمالي:</b> ${totalPrice}\n` +
+                            `📝 <b>ملاحظات:</b> ${notes}`;
 
-            // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
-if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
-                fetch(googleSheetURL, {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "text/plain;charset=utf-8"
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        childName: childName,
-                        phone: phone,
-                        governorate: gov,
-                        address: address,
-                        package: packageText,
-                        totalPrice: totalPrice,
-                        notes: notes
-                    })
-                }).catch(err => console.log('Sheet upload error:', err));
-            }
-
-            // --- 2. إرسال الداتا والصور لتيليجرام ---
             try {
-                // إرسال النص
+                // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
+                if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
+                    fetch(googleSheetURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            "Content-Type": "text/plain;charset=utf-8"
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            childName: childName,
+                            phone: phone,
+                            governorate: gov,
+                            address: address,
+                            package: packageText,
+                            totalPrice: totalPrice,
+                            notes: notes
+                        })
+                    }).catch(err => console.log('Sheet upload error:', err));
+                }
+
+                // --- 2. إرسال الداتا والصور لتيليجرام ---
                 let textRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'Markdown' })
+                    body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'HTML' })
                 });
 
                 if(!textRes.ok) {
-                    throw new Error("تأكد إنك دوست Start للبوت على تيليجرام.");
+                    let errData = await textRes.json();
+                    throw new Error(errData.description || "تأكد إنك دوست Start للبوت على تيليجرام.");
                 }
 
-                // إرسال صور الطفل
                 const childPhotos = document.getElementById('childPhotos').files;
                 for(let i=0; i<childPhotos.length; i++) {
                     let formData = new FormData();
@@ -486,7 +503,6 @@ if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
                     await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
                 }
 
-                // إرسال سكرين شوت الدفع
                 const paymentPhoto = document.getElementById('paymentScreenshot').files[0];
                 if(paymentPhoto) {
                     let formData = new FormData();
@@ -496,18 +512,26 @@ if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
                     await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
                 }
 
-                // إظهار رسالة النجاح لو كله تمام
                 modal.classList.remove('hidden');
                 setTimeout(() => {
                     modal.classList.remove('opacity-0');
                     modalContent.classList.remove('scale-95');
                 }, 10);
 
+                // Meta Pixel Tracking
+                if (typeof fbq === 'function') {
+                    const priceValue = parseInt(totalPrice) || 0;
+                    fbq('track', 'Lead');
+                    fbq('track', 'Purchase', {
+                        value: priceValue,
+                        currency: 'EGP'
+                    });
+                }
+
             } catch (error) {
                 alert(`حدث خطأ أثناء الإرسال: ${error.message}`);
                 console.error(error);
             } finally {
-                // إرجاع الزرار لشكله الطبيعي
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             }
