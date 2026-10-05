@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كتاب تلوين البطل | Jump & Snap</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        pastel: {
+                            pink: '#FFE4E1',
+                            blue: '#E0F7FA',
+                            yellow: '#FFF9C4',
+                            purple: '#F3E5F5',
+                            darkText: '#2D3748',
+                            primary: '#FF6B6B',
+                            secondary: '#4ECDC4'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #fcfcfc; }
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to left, #FF6B6B, #9b59b6);
+        }
+        .hero-pattern {
+            background-color: #ffffff;
+            background-image: radial-gradient(#FFE4E1 2px, transparent 2px), radial-gradient(#E0F7FA 2px, transparent 2px);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+        }
+        input[type="file"]::file-selector-button {
+            margin-inline-end: 1rem;
+            border-radius: 9999px;
+            border: none;
+            background-color: #4ECDC4;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #45b7af;
+        }
+    </style>
+</head>
+<body class="text-pastel-darkText antialiased selection:bg-pastel-pink selection:text-pastel-darkText">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-camera-retro text-3xl text-pastel-primary"></i>
+                <h1 class="text-2xl font-black tracking-tight text-pastel-darkText">Jump <span class="text-pastel-primary">&</span> Snap</h1>
+            </div>
+            <a href="#order-section" class="bg-pastel-primary hover:bg-red-500 text-white font-bold py-2 px-6 rounded-full transition-transform transform hover:scale-105 shadow-md">
+                اطلب الآن
+            </a>
+        </div>
+    </header>
+
+    <section class="hero-pattern pt-16 pb-20 border-b border-gray-100 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-pastel-yellow rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-pastel-blue rounded-full mix-blend-multiply filter blur-3xl opacity-50 translate-y-1/2 -translate-x-1/2"></div>
+
+        <div class="max-w-4xl mx-auto px-4 text-center relative z-10">
+            <span class="inline-block py-1 px-3 rounded-full bg-pastel-yellow text-amber-700 font-bold text-sm mb-4 border border-amber-200">الإصدار المخصص للأطفال 🌟</span>
+            
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
+                كتاب تلوين البطل <br>
+                <span class="gradient-text">خلي طفلك بطل حكايته! 🎨✨</span>
+            </h2>
+            
+            <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed font-semibold">
+                كتاب تلوين بيضم 30 صورة مخصصة بملامح طفلك بالظبط، بيعيش فيها مغامرات خيالية! <br> 
+                <span class="text-pastel-secondary">+ نسخة ديجيتال مجانية</span> تقدر تطبعها في أي وقت!
+            </p>
+            
+            <div class="mb-8">
+                <img src="12485108320039338130.jpeg" alt="فرحة الطفل بكتاب البطل" class="rounded-3xl shadow-lg mx-auto w-full max-w-lg object-cover">
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-soft max-w-2xl mx-auto border border-pastel-pink">
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-6">
+                    <div class="text-4xl font-black text-pastel-primary">299 ج.م</div>
+                    <div class="text-xl text-gray-400 line-through font-bold">599 ج.م</div>
+                    <div class="bg-red-100 text-red-600 font-bold px-3 py-1 rounded-full text-sm">خصم 50% لفترة محدودة!</div>
+                </div>
+
+                <p class="text-gray-500 font-bold mb-3">العرض ينتهي خلال:</p>
+                <div class="flex justify-center gap-3 text-center mb-6" dir="ltr">
+                    <div class="bg-gray-50 rounded-xl p-3 w-20 border border-gray-100 shadow-sm">
+                        <div id="hours" class="text-2xl font-black text-gray-800">02</div>
+                        <div class="text-xs text-gray-500 font-bold">Hours</div>
+                    </div>
+                    <div class="text-2xl font-black text-gray-300 self-center">:</div>
+                    <div class="bg-gray-50 rounded-xl p-3 w-20 border border-gray-100 shadow-sm">
+                        <div id="minutes" class="text-2xl font-black text-gray-800">15</div>
+                        <div class="text-xs text-gray-500 font-bold">Mins</div>
+                    </div>
+                    <div class="text-2xl font-black text-gray-300 self-center">:</div>
+                    <div class="bg-gray-50 rounded-xl p-3 w-20 border border-gray-100 shadow-sm">
+                        <div id="seconds" class="text-2xl font-black text-gray-800">30</div>
+                        <div class="text-xs text-gray-500 font-bold">Secs</div>
+                    </div>
+                </div>
+                
+                <a href="#order-section" class="block w-full bg-pastel-primary hover:bg-red-500 text-white font-bold text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl">
+                    اطلب كتاب طفلك الآن 🚀
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-white">
+        <div class="max-w-5xl mx-auto px-4">
+            <h3 class="text-3xl font-black text-center mb-12">إزاي بنعمل السحر ده؟ ✨</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-pastel-blue p-8 rounded-3xl shadow-sm border border-blue-100 hover:-translate-y-2 transition-transform">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-blue-500 shadow-sm font-bold">1</div>
+                    <h4 class="text-xl font-bold mb-3">ارفع صور طفلك</h4>
+                    <p class="text-gray-600 font-semibold">ارفع من 1 لـ 5 صور واضحة لطفلك عشان نقدر نرسم ملامحه بدقة في المغامرات.</p>
+                </div>
+                <div class="bg-pastel-pink p-8 rounded-3xl shadow-sm border border-pink-100 hover:-translate-y-2 transition-transform">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-pink-500 shadow-sm font-bold">2</div>
+                    <h4 class="text-xl font-bold mb-3">أكد الطلب</h4>
+                    <p class="text-gray-600 font-semibold">حول ديبوزيت 100 جنيه لتأكيد جدية الطلب وهنخصمهم من إجمالي الحساب.</p>
+                </div>
+                <div class="bg-pastel-yellow p-8 rounded-3xl shadow-sm border border-yellow-100 hover:-translate-y-2 transition-transform">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-yellow-500 shadow-sm font-bold">3</div>
+                    <h4 class="text-xl font-bold mb-3">هنصمم ونوصلك</h4>
+                    <p class="text-gray-600 font-semibold">فريقنا هيبدأ تصميم الكتاب فوراً وهنوصله لباب بيتك بأعلى جودة طباعة!</p>
+                </div>
+            </div>
+            <div class="mt-12 text-center">
+                <img src="11613031302214857793.jpeg" alt="ساعة هدوء وتركيز" class="rounded-3xl shadow-lg mx-auto w-full max-w-2xl object-cover">
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-pastel-pink/20">
+        <div class="max-w-5xl mx-auto px-4">
+            <h3 class="text-3xl font-black text-center mb-6">مش مجرد كتاب تلوين، ده وقت ممتع هيجمعكم سوا! 👨‍👩‍👧‍👦</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+                <div>
+                    <img src="16361305228076054200.jpeg" alt="الأب يشارك في التلوين" class="rounded-3xl shadow-md w-full object-cover">
+                </div>
+                <div>
+                    <img src="15420565529153825806.jpeg" alt="تلوين تفاصيل مخصصة" class="rounded-3xl shadow-md w-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="order-section" class="py-16 bg-gray-50 relative">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="bg-white rounded-3xl shadow-soft p-6 md:p-10 border border-gray-100">
+                <div class="text-center mb-10">
+                    <h3 class="text-3xl font-black mb-3">سجل طلبك دلوقتي 📝</h3>
+                    <p class="text-gray-500 font-semibold">املأ البيانات دي وهنتواصل معاك فوراً لتأكيد الطباعة.</p>
+                </div>
+
+                <form id="orderForm" action="javascript:void(0)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">الاسم بالكامل <span class="text-red-500">*</span></label>
+                            <input type="text" id="custName" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-secondary focus:border-transparent transition-shadow" placeholder="اسمك الثنائي">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">رقم الهاتف (واتساب) <span class="text-red-500">*</span></label>
+                            <input type="tel" id="custPhone" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-secondary focus:border-transparent transition-shadow" placeholder="01xxxxxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">المحافظة <span class="text-red-500">*</span></label>
+                            <select id="governorateSelect" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-secondary focus:border-transparent transition-shadow">
+                                <option value="" disabled selected>اختر المحافظة</option>
+                                <option value="60">القاهرة</option>
+                                <option value="60">الجيزة</option>
+                                <option value="60">الإسكندرية</option>
+                                <option value="60">القليوبية</option>
+                                <option value="60">المنوفية</option>
+                                <option value="60">الشرقية</option>
+                                <option value="60">الغربية</option>
+                                <option value="60">الدقهلية</option>
+                                <option value="60">البحيرة</option>
+                                <option value="60">كفر الشيخ</option>
+                                <option value="60">دمياط</option>
+                                <option value="60">بورسعيد</option>
+                                <option value="60">الإسماعيلية</option>
+                                <option value="60">السويس</option>
+                                <option value="60">مطروح</option>
+                                <option value="60">الفيوم</option>
+                                <option value="60">بني سويف</option>
+                                <option value="60">المنيا</option>
+                                <option value="60">أسيوط</option>
+                                <option value="60">سوهاج</option>
+                                <option value="60">قنا</option>
+                                <option value="60">الأقصر</option>
+                                <option value="60">أسوان</option>
+                                <option value="60">البحر الأحمر</option>
+                                <option value="60">الوادي الجديد</option>
+                                <option value="60">شمال سيناء</option>
+                                <option value="60">جنوب سيناء</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">العنوان بالتفصيل <span class="text-red-500">*</span></label>
+                            <input type="text" id="custAddress" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-secondary focus:border-transparent transition-shadow" placeholder="الشارع، العمارة، الدور، الشقة">
+                        </div>
+                    </div>
+
+                    <!-- Child Name -->
+                    <div class="bg-pastel-pink/20 p-4 rounded-xl border border-pink-100 mt-2 mb-2">
+                        <label class="block text-gray-700 font-bold mb-2">اسم الطفل (اللي هيتكتب على الغلاف) <span class="text-red-500">*</span></label>
+                        <input type="text" id="childName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-primary focus:border-transparent transition-shadow" placeholder="مثال: يوسف، مريم، أحمد...">
+                    </div>
+
+                    <div class="bg-pastel-blue/30 p-5 rounded-2xl border border-blue-100">
+                        <label class="block text-gray-800 font-bold mb-2">
+                            <i class="fa-solid fa-images text-pastel-secondary ml-1"></i>
+                            صور الطفل (ارفع من 1 لـ 5 صور واضحة) <span class="text-red-500">*</span>
+                        </label>
+                        <p class="text-sm text-gray-500 font-semibold mb-3">عشان النتيجة تطلع مظبوطة، يرجى رفع صور بملامح واضحة وإضاءة جيدة.</p>
+                        <input type="file" id="childPhotos" multiple accept="image/*" required class="w-full text-gray-600 font-semibold file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pastel-secondary file:text-white hover:file:bg-teal-500">
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="block text-gray-800 font-bold mb-2">اختر الباقة المناسبة <span class="text-red-500">*</span></label>
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors bg-white relative">
+                            <input type="radio" name="package" value="299" class="w-5 h-5 text-pastel-primary focus:ring-pastel-primary border-gray-300" checked onchange="updateSummary()">
+                            <div class="mr-4 flex-1">
+                                <span class="block font-bold text-lg text-gray-800">باقة كتاب واحد</span>
+                                <span class="block text-gray-500 font-semibold text-sm mt-1">كتاب 30 صفحة مخصصة + النسخة الديجيتال</span>
+                            </div>
+                            <span class="font-black text-xl text-pastel-primary">299 ج.م</span>
+                        </label>
+
+                        <label class="flex items-center p-4 border-2 border-pastel-primary rounded-xl cursor-pointer hover:bg-red-50 transition-colors bg-red-50/50 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">الأكثر مبيعاً 🔥</div>
+                            <input type="radio" name="package" value="598" class="w-5 h-5 text-pastel-primary focus:ring-pastel-primary border-gray-300" onchange="updateSummary()">
+                            <div class="mr-4 flex-1 mt-3">
+                                <span class="block font-bold text-lg text-gray-800">عرض الـ 3 كتب بسعر 2</span>
+                                <span class="block text-gray-500 font-semibold text-sm mt-1">وفر سعر كتاب كامل وهادي ولاد العيلة!</span>
+                            </div>
+                            <span class="font-black text-xl text-red-600 mt-3">598 ج.م</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">ملاحظات إضافية (اختياري)</label>
+                        <textarea id="custNotes" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-secondary focus:border-transparent transition-shadow h-24" placeholder="لو عندك أي تفاصيل إضافية تحب نراعيها في التصميم..."></textarea>
+                    </div>
+
+                    <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 shadow-sm relative">
+                        <div class="absolute top-4 left-4 text-amber-300 opacity-50 text-6xl">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <h4 class="text-lg font-black text-amber-800 mb-2 relative z-10">تأكيد الطلب (ديبوزيت)</h4>
+                        <p class="text-amber-700 font-semibold mb-4 leading-relaxed relative z-10">
+                            لتأكيد جدية الطباعة والتصميم المخصص، برجاء تحويل عربون بقيمة <strong>100 جنيه</strong> على محفظة إلكترونية (فودافون كاش أو أي محفظة موبايل - غير متاح إنستاباي) على الرقم التالي: 
+                            <br>
+                            <span class="inline-block mt-2 bg-white px-4 py-2 rounded-lg font-black text-xl border border-amber-200 tracking-wider">01121465104</span>
+                        </p>
+                        <div class="relative z-10">
+                            <label class="block text-gray-800 font-bold mb-2">
+                                <i class="fa-solid fa-receipt text-amber-600 ml-1"></i>
+                                ارفع سكرين شوت التحويل هنا <span class="text-red-500">*</span>
+                            </label>
+                            <input type="file" id="paymentScreenshot" accept="image/*" required class="w-full text-gray-600 font-semibold file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600">
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 border-dashed border-gray-200 pt-6 mt-6">
+                        <h4 class="font-black text-xl mb-4">ملخص الطلب</h4>
+                        <div class="flex justify-between items-center mb-2 font-semibold text-gray-600">
+                            <span>قيمة المنتجات:</span>
+                            <span id="summaryPackagePrice">299 ج.م</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-4 font-semibold text-gray-600">
+                            <span>مصاريف الشحن:</span>
+                            <span id="summaryShippingPrice">60 ج.م</span>
+                        </div>
+                        <div class="flex justify-between items-center text-2xl font-black text-pastel-darkText bg-gray-100 p-4 rounded-xl">
+                            <span>الإجمالي:</span>
+                            <span id="summaryTotalPrice" class="text-pastel-primary">359 ج.م</span>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-500 text-center mt-3">سيتم خصم 100 جنيه (الديبوزيت) من إجمالي المبلغ عند الاستلام.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-4 mt-6">
+                        <button type="submit" id="submitBtn" class="w-full bg-pastel-secondary hover:bg-teal-500 text-white font-black text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-check-circle"></i> تأكيد الطلب وتسجيل البيانات
+                        </button>
+                        
+                        <button type="button" onclick="orderViaWhatsapp()" class="w-full bg-[#25d366] hover:bg-[#1ebe57] text-white font-black text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-3xl"></i> الطلب والتواصل واتساب
+                        </button>
+                    </div>
+                    
+                    <div class="mt-10 text-center">
+                        <h4 class="text-xl font-bold text-gray-700 mb-4">فرحته متتوصفش لما يشوف نفسه بطل! 🥇</h4>
+                        <img src="14638396977287833697.jpeg" alt="طفل سعيد بالكتاب" class="rounded-3xl shadow-lg mx-auto w-full max-w-md object-cover">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-white py-8 border-t border-gray-100 text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-2xl font-black tracking-tight text-gray-300 mb-2">Jump & Snap</h2>
+            <p class="text-gray-500 font-semibold">© 2026 جميع الحقوق محفوظة لـ Jump & Snap</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/201121465104" target="_blank" class="fixed bottom-6 right-6 bg-[#25d366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-lg hover:bg-green-600 hover:scale-110 transition-transform z-40">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <div id="thankYouModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl text-green-500">
+                <i class="fa-solid fa-party-horn"></i>🎉
+            </div>
+            <h3 class="text-2xl font-black mb-3">تم استقبال الطلب بنجاح!</h3>
+            <p class="text-gray-600 font-semibold mb-8 leading-relaxed">
+                شكراً لاختيارك Jump & Snap. استلمنا بياناتك وصور طفلك بنجاح. هنتواصل معاك في أسرع وقت على الواتساب لتأكيد الطلب وبدء التنفيذ! 🎨
+            </p>
+            <button onclick="closeModal()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                حسناً، إغلاق النافذة
+            </button>
+        </div>
+    </div>
+
+<script>
+        function startCountdown() {
+            let durationInSeconds = (2 * 60 * 60) + (15 * 60) + 30; 
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            const interval = setInterval(() => {
+                if (durationInSeconds <= 0) { clearInterval(interval); return; }
+                durationInSeconds--;
+                let h = Math.floor(durationInSeconds / 3600);
+                let m = Math.floor((durationInSeconds % 3600) / 60);
+                let s = durationInSeconds % 60;
+                hoursEl.textContent = h.toString().padStart(2, '0');
+                minutesEl.textContent = m.toString().padStart(2, '0');
+                secondsEl.textContent = s.toString().padStart(2, '0');
+            }, 1000);
+        }
+
+        const govSelect = document.getElementById('governorateSelect');
+        const summaryPackagePrice = document.getElementById('summaryPackagePrice');
+        const summaryShippingPrice = document.getElementById('summaryShippingPrice');
+        const summaryTotalPrice = document.getElementById('summaryTotalPrice');
+        
+        function updateSummary() {
+            const selectedPackage = document.querySelector('input[name="package"]:checked').value;
+            const packageCost = parseInt(selectedPackage);
+            const shippingCost = 60;
+            const totalCost = packageCost + shippingCost;
+            summaryPackagePrice.textContent = `${packageCost} ج.م`;
+            summaryShippingPrice.textContent = `${shippingCost} ج.م`;
+            summaryTotalPrice.textContent = `${totalCost} ج.م`;
+        }
+
+        function orderViaWhatsapp() {
+            const name = document.getElementById('custName').value || 'عميل جديد';
+            const childName = document.getElementById('childName') ? document.getElementById('childName').value : 'غير محدد';
+            const phone = document.getElementById('custPhone').value || 'غير محدد';
+            const govSelect = document.getElementById('governorateSelect');
+            const gov = govSelect.options[govSelect.selectedIndex].text || 'غير محدد';
+            const address = document.getElementById('custAddress').value || 'غير محدد';
+            const selectedPackage = document.querySelector('input[name="package"]:checked').value;
+            const packageText = selectedPackage === "299" ? "باقة كتاب واحد (299 ج)" : "عرض الـ 3 كتب (598 ج)";
+            const message = `أهلاً، عايز أطلب كتاب تلوين البطل! 🦸‍♂️\n\n📌 *بيانات الطلب:*\n- *اسم ولي الأمر:* ${name}\n- *اسم الطفل:* ${childName}\n- *الموبايل:* ${phone}\n- *المحافظة:* ${gov}\n- *العنوان:* ${address}\n- *الباقة المطلوبة:* ${packageText}\n\nجاهز أبعت الصور وتأكيد الديبوزيت. 🚀`;
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/201121465104?text=${encodedMessage}`, '_blank');
+        }
+
+        govSelect.addEventListener('change', updateSummary);
+        
+        const form = document.getElementById('orderForm');
+        const modal = document.getElementById('thankYouModal');
+        const modalContent = document.getElementById('modalContent');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال الطلب...';
+            submitBtn.disabled = true;
+
+            const tgToken = "8597391761:AAEHbD1_T11zSaky9h000VYps6E3stcVS44";
+            const chatId = "YOUR_CHAT_ID_HERE"; // حط الـ Chat ID بتاعك هنا
+            const googleSheetURL = "https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec"; 
+
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const gov = govSelect.options[govSelect.selectedIndex].text;
+            const childName = document.getElementById('childName').value;
+            const address = document.getElementById('custAddress').value;
+            const selectedPackage = document.querySelector('input[name="package"]:checked').value;
+            const packageText = selectedPackage === "299" ? "كتاب واحد (299 ج.م)" : "3 كتب (598 ج.م)";
+            const notes = document.getElementById('custNotes') ? document.getElementById('custNotes').value : "لا يوجد";
+            const totalPrice = document.getElementById('summaryTotalPrice').innerText;
+
+            const tgMessage = `🆕 *طلب جديد - كتاب البطل* 🆕\n\n` +
+                            `👤 *اسم ولي الأمر:* ${name}\n` +
+                            `👶 *اسم الطفل:* ${childName}\n` +
+                            `📱 *الموبايل:* ${phone}\n` +
+                            `📍 *المحافظة:* ${gov}\n` +
+                            `🏠 *العنوان:* ${address}\n` +
+                            `📦 *الباقة:* ${packageText}\n` +
+                            `💰 *الإجمالي:* ${totalPrice}\n` +
+                            `📝 *ملاحظات:* ${notes}`;
+
+            try {
+                if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
+                    fetch(googleSheetURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify({
+                            name: name,
+                            childName: childName,
+                            phone: phone,
+                            governorate: gov,
+                            address: address,
+                            package: packageText,
+                            totalPrice: totalPrice,
+                            notes: notes
+                        })
+                    }).catch(err => console.log('Sheet upload error:', err));
+                }
+
+                await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'Markdown' })
+                });
+
+                const childPhotos = document.getElementById('childPhotos').files;
+                for(let i=0; i<childPhotos.length; i++) {
+                    let formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', childPhotos[i]);
+                    formData.append('caption', `صورة الطفل ${i+1} - طلب: ${name}`);
+                    await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
+                }
+
+                const paymentPhoto = document.getElementById('paymentScreenshot').files[0];
+                if(paymentPhoto) {
+                    let formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', paymentPhoto);
+                    formData.append('caption', `سكرين شوت الدفع - طلب: ${name}`);
+                    await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
+                }
+
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalContent.classList.remove('scale-95');
+                }, 10);
+
+            } catch (error) {
+                alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى أو التواصل عبر الواتساب.');
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                form.reset();
+                updateSummary();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+            updateSummary();
+        });
+    </script>
+</body>
+</html>
