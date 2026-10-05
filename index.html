@@ -414,11 +414,13 @@
             
             const submitBtn = document.getElementById('submitBtn');
             const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال الطلب...';
+            
+            // تغيير شكل الزرار وتوقيفه عشان العميل ميكررش الطلب
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري رفع الصور وإرسال الطلب... يرجى الانتظار⏳';
             submitBtn.disabled = true;
 
             const tgToken = "8597391761:AAEHbD1_T11zSaky9h000VYps6E3stcVS44";
-            const chatId = "YOUR_CHAT_ID_HERE"; // حط الـ Chat ID بتاعك هنا
+            const chatId = "8195129373"; 
             const googleSheetURL = "https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec"; 
 
             const name = document.getElementById('custName').value;
@@ -441,30 +443,38 @@
                             `💰 *الإجمالي:* ${totalPrice}\n` +
                             `📝 *ملاحظات:* ${notes}`;
 
-            try {
-                if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
-                    fetch(googleSheetURL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({
-                            name: name,
-                            childName: childName,
-                            phone: phone,
-                            governorate: gov,
-                            address: address,
-                            package: packageText,
-                            totalPrice: totalPrice,
-                            notes: notes
-                        })
-                    }).catch(err => console.log('Sheet upload error:', err));
-                }
+            // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
+            if(googleSheetURL && googleSheetURL.startsWith('http')) {
+                fetch(googleSheetURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        name: name,
+                        childName: childName,
+                        phone: phone,
+                        governorate: gov,
+                        address: address,
+                        package: packageText,
+                        totalPrice: totalPrice,
+                        notes: notes
+                    })
+                }).catch(err => console.log('Sheet upload ignored:', err));
+            }
 
-                await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+            // --- 2. إرسال الداتا والصور لتيليجرام ---
+            try {
+                // إرسال النص
+                let textRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'Markdown' })
                 });
 
+                if(!textRes.ok) {
+                    throw new Error("تأكد إنك دوست Start للبوت على تيليجرام.");
+                }
+
+                // إرسال صور الطفل
                 const childPhotos = document.getElementById('childPhotos').files;
                 for(let i=0; i<childPhotos.length; i++) {
                     let formData = new FormData();
@@ -474,6 +484,7 @@
                     await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
                 }
 
+                // إرسال سكرين شوت الدفع
                 const paymentPhoto = document.getElementById('paymentScreenshot').files[0];
                 if(paymentPhoto) {
                     let formData = new FormData();
@@ -483,6 +494,7 @@
                     await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
                 }
 
+                // إظهار رسالة النجاح لو كله تمام
                 modal.classList.remove('hidden');
                 setTimeout(() => {
                     modal.classList.remove('opacity-0');
@@ -490,8 +502,10 @@
                 }, 10);
 
             } catch (error) {
-                alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى أو التواصل عبر الواتساب.');
+                alert(`حدث خطأ أثناء الإرسال: ${error.message}`);
+                console.error(error);
             } finally {
+                // إرجاع الزرار لشكله الطبيعي
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             }
@@ -512,6 +526,6 @@
             startCountdown();
             updateSummary();
         });
-    </script>
+</script>
 </body>
 </html>
