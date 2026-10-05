@@ -444,10 +444,12 @@
                             `📝 *ملاحظات:* ${notes}`;
 
             // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
-            if(googleSheetURL && googleSheetURL.startsWith('http')) {
+if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
                 fetch(googleSheetURL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    headers: {
+                        "Content-Type": "text/plain;charset=utf-8"
+                    },
                     body: JSON.stringify({
                         name: name,
                         childName: childName,
@@ -458,7 +460,7 @@
                         totalPrice: totalPrice,
                         notes: notes
                     })
-                }).catch(err => console.log('Sheet upload ignored:', err));
+                }).catch(err => console.log('Sheet upload error:', err));
             }
 
             // --- 2. إرسال الداتا والصور لتيليجرام ---
