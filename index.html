@@ -157,8 +157,8 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div class="bg-pastel-blue p-8 rounded-3xl shadow-sm border border-blue-100 hover:-translate-y-2 transition-transform">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-blue-500 shadow-sm font-bold">1</div>
-                    <h4 class="text-xl font-bold mb-3">ارفع صور طفلك</h4>
-                    <p class="text-gray-600 font-semibold">ارفع من 1 لـ 5 صور واضحة لطفلك عشان نقدر نرسم ملامحه بدقة في المغامرات.</p>
+                    <h4 class="text-xl font-bold mb-3">ابعت صور طفلك</h4>
+                    <p class="text-gray-600 font-semibold">بعد تسجيل الطلب، هنستقبل منك صور واضحة لطفلك على الواتساب عشان نرسم ملامحه بدقة.</p>
                 </div>
                 <div class="bg-pastel-pink p-8 rounded-3xl shadow-sm border border-pink-100 hover:-translate-y-2 transition-transform">
                     <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl text-pink-500 shadow-sm font-bold">2</div>
@@ -257,15 +257,6 @@
                         <input type="text" id="childName" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-primary focus:border-transparent transition-shadow" placeholder="مثال: يوسف، مريم، أحمد...">
                     </div>
 
-                    <div class="bg-pastel-blue/30 p-5 rounded-2xl border border-blue-100">
-                        <label class="block text-gray-800 font-bold mb-2">
-                            <i class="fa-solid fa-images text-pastel-secondary ml-1"></i>
-                            صور الطفل (ارفع من 1 لـ 5 صور واضحة) <span class="text-red-500">*</span>
-                        </label>
-                        <p class="text-sm text-gray-500 font-semibold mb-3">عشان النتيجة تطلع مظبوطة، يرجى رفع صور بملامح واضحة وإضاءة جيدة.</p>
-                        <input type="file" id="childPhotos" multiple accept="image/*" required class="w-full text-gray-600 font-semibold file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pastel-secondary file:text-white hover:file:bg-teal-500">
-                    </div>
-
                     <div class="space-y-3">
                         <label class="block text-gray-800 font-bold mb-2">اختر الباقة المناسبة <span class="text-red-500">*</span></label>
                         <label class="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors bg-white relative">
@@ -295,21 +286,12 @@
 
                     <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200 shadow-sm relative">
                         <div class="absolute top-4 left-4 text-amber-300 opacity-50 text-6xl">
-                            <i class="fa-solid fa-wallet"></i>
+                            <i class="fa-brands fa-whatsapp"></i>
                         </div>
-                        <h4 class="text-lg font-black text-amber-800 mb-2 relative z-10">تأكيد الطلب (ديبوزيت)</h4>
-                        <p class="text-amber-700 font-semibold mb-4 leading-relaxed relative z-10">
-                            لتأكيد جدية الطباعة والتصميم المخصص، برجاء تحويل عربون بقيمة <strong>100 جنيه</strong> على محفظة إلكترونية (فودافون كاش أو أي محفظة موبايل - غير متاح إنستاباي) على الرقم التالي: 
-                            <br>
-                            <span class="inline-block mt-2 bg-white px-4 py-2 rounded-lg font-black text-xl border border-amber-200 tracking-wider">01121465104</span>
+                        <h4 class="text-lg font-black text-amber-800 mb-2 relative z-10">الخطوة القادمة بعد الطلب</h4>
+                        <p class="text-amber-700 font-semibold mb-0 leading-relaxed relative z-10">
+                            بعد الضغط على زر التأكيد، سيتم توجيهك تلقائياً للواتساب لإرسال <strong>صور الطفل</strong> وإتمام <strong>ديبوزيت 100 جنيه</strong> لتأكيد الطباعة والتصميم.
                         </p>
-                        <div class="relative z-10">
-                            <label class="block text-gray-800 font-bold mb-2">
-                                <i class="fa-solid fa-receipt text-amber-600 ml-1"></i>
-                                ارفع سكرين شوت التحويل هنا <span class="text-red-500">*</span>
-                            </label>
-                            <input type="file" id="paymentScreenshot" accept="image/*" required class="w-full text-gray-600 font-semibold file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-white hover:file:bg-amber-600">
-                        </div>
                     </div>
 
                     <div class="border-t-2 border-dashed border-gray-200 pt-6 mt-6">
@@ -330,12 +312,8 @@
                     </div>
 
                     <div class="flex flex-col gap-4 mt-6">
-                        <button type="submit" id="submitBtn" class="w-full bg-pastel-secondary hover:bg-teal-500 text-white font-black text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-check-circle"></i> تأكيد الطلب وتسجيل البيانات
-                        </button>
-                        
-                        <button type="button" onclick="orderViaWhatsapp()" class="w-full bg-[#25d366] hover:bg-[#1ebe57] text-white font-black text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center gap-2">
-                            <i class="fa-brands fa-whatsapp text-3xl"></i> الطلب والتواصل واتساب
+                        <button type="submit" id="submitBtn" class="w-full bg-[#25d366] hover:bg-[#1ebe57] text-white font-black text-xl py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-3xl"></i> تأكيد الطلب والمتابعة على الواتساب
                         </button>
                     </div>
                     
@@ -433,7 +411,7 @@
             const submitBtn = document.getElementById('submitBtn');
             const originalBtnText = submitBtn.innerHTML;
             
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري رفع الصور وإرسال الطلب... يرجى الانتظار⏳';
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري تحويلك للواتساب... ⏳';
             submitBtn.disabled = true;
 
             const tgToken = "8597391761:AAEHbD1_T11zSaky9h000VYps6E3stcVS44";
@@ -458,7 +436,8 @@
                             `🏠 <b>العنوان:</b> ${address}\n` +
                             `📦 <b>الباقة:</b> ${packageText}\n` +
                             `💰 <b>الإجمالي:</b> ${totalPrice}\n` +
-                            `📝 <b>ملاحظات:</b> ${notes}`;
+                            `📝 <b>ملاحظات:</b> ${notes}\n\n` +
+                            `⚠️ <i>العميل تم تحويله للواتساب لاستكمال الصور والدفع</i>`;
 
             try {
                 // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
@@ -482,41 +461,12 @@
                     }).catch(err => console.log('Sheet upload error:', err));
                 }
 
-                // --- 2. إرسال الداتا والصور لتيليجرام ---
-                let textRes = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+                // --- 2. إرسال الداتا لتيليجرام ---
+                fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'HTML' })
-                });
-
-                if(!textRes.ok) {
-                    let errData = await textRes.json();
-                    throw new Error(errData.description || "تأكد إنك دوست Start للبوت على تيليجرام.");
-                }
-
-                const childPhotos = document.getElementById('childPhotos').files;
-                for(let i=0; i<childPhotos.length; i++) {
-                    let formData = new FormData();
-                    formData.append('chat_id', chatId);
-                    formData.append('photo', childPhotos[i]);
-                    formData.append('caption', `صورة الطفل ${i+1} - طلب: ${name}`);
-                    await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
-                }
-
-                const paymentPhoto = document.getElementById('paymentScreenshot').files[0];
-                if(paymentPhoto) {
-                    let formData = new FormData();
-                    formData.append('chat_id', chatId);
-                    formData.append('photo', paymentPhoto);
-                    formData.append('caption', `سكرين شوت الدفع - طلب: ${name}`);
-                    await fetch(`https://api.telegram.org/bot${tgToken}/sendPhoto`, { method: 'POST', body: formData });
-                }
-
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    modalContent.classList.remove('scale-95');
-                }, 10);
+                }).catch(err => console.log('TG error:', err));
 
                 // Meta Pixel Tracking
                 if (typeof fbq === 'function') {
@@ -528,10 +478,19 @@
                     });
                 }
 
+                // --- 3. تحويل العميل للواتساب ---
+                setTimeout(() => {
+                    const waMessage = `أهلاً، سجلت طلب جديد لكتاب تلوين البطل! 🦸‍♂️\n\n📌 *بيانات الطلب:*\n- *اسم ولي الأمر:* ${name}\n- *اسم الطفل:* ${childName}\n- *الموبايل:* ${phone}\n- *المحافظة:* ${gov}\n- *العنوان:* ${address}\n- *الباقة المطلوبة:* ${packageText}\n- *الإجمالي:* ${totalPrice}\n\nمستعد لإرسال صور الطفل وتأكيد الديبوزيت. 🚀`;
+                    const encodedMessage = encodeURIComponent(waMessage);
+                    window.location.href = `https://wa.me/201121465104?text=${encodedMessage}`;
+                    
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                }, 800); // تأخير بسيط جداً عشان البيكسل وجوجل شيت يلحقوا يبعتوا الداتا
+
             } catch (error) {
-                alert(`حدث خطأ أثناء الإرسال: ${error.message}`);
+                alert(`حدث خطأ، يرجى المحاولة مرة أخرى.`);
                 console.error(error);
-            } finally {
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
             }
