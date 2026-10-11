@@ -414,9 +414,8 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري تحويلك للواتساب... ⏳';
             submitBtn.disabled = true;
 
-            const tgToken = "8597391761:AAEHbD1_T11zSaky9h000VYps6E3stcVS44";
-            const chatId = "8195129373"; 
-            const googleSheetURL = "https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec"; 
+            const googleSheetURL = "https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec";
+            const orderId = 'JS-' + (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2)));
 
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
@@ -428,27 +427,15 @@
             const notes = document.getElementById('custNotes') ? document.getElementById('custNotes').value : "لا يوجد";
             const totalPrice = document.getElementById('summaryTotalPrice').innerText;
 
-            const tgMessage = `🆕 <b>طلب جديد - كتاب البطل</b> 🆕\n\n` +
-                            `👤 <b>اسم ولي الأمر:</b> ${name}\n` +
-                            `👶 <b>اسم الطفل:</b> ${childName}\n` +
-                            `📱 <b>الموبايل:</b> ${phone}\n` +
-                            `📍 <b>المحافظة:</b> ${gov}\n` +
-                            `🏠 <b>العنوان:</b> ${address}\n` +
-                            `📦 <b>الباقة:</b> ${packageText}\n` +
-                            `💰 <b>الإجمالي:</b> ${totalPrice}\n` +
-                            `📝 <b>ملاحظات:</b> ${notes}\n\n` +
-                            `⚠️ <i>العميل تم تحويله للواتساب لاستكمال الصور والدفع</i>`;
-
             try {
-                // --- 1. إرسال الداتا لجوجل شيت في الخلفية ---
-                if(googleSheetURL && googleSheetURL.includes('script.google.com')) {
-                    fetch(googleSheetURL, {
+                // The Apps Script backend writes the row and sends the Telegram order with its button.
+                if (googleSheetURL && googleSheetURL.includes('script.google.com')) {
+                    await fetch(googleSheetURL, {
                         method: 'POST',
                         mode: 'no-cors',
-                        headers: {
-                            "Content-Type": "text/plain;charset=utf-8"
-                        },
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({
+                            orderId: orderId,
                             name: name,
                             childName: childName,
                             phone: phone,
@@ -458,15 +445,10 @@
                             totalPrice: totalPrice,
                             notes: notes
                         })
-                    }).catch(err => console.log('Sheet upload error:', err));
+                    });
+                } else {
+                    throw new Error('Order endpoint is not configured');
                 }
-
-                // --- 2. إرسال الداتا لتيليجرام ---
-                fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ chat_id: chatId, text: tgMessage, parse_mode: 'HTML' })
-                }).catch(err => console.log('TG error:', err));
 
                 // Meta Pixel Tracking
                 if (typeof fbq === 'function') {
