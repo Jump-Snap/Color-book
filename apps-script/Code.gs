@@ -242,7 +242,8 @@ function processDepositButton_(callback, token, adminChatId) {
   const prompt = telegramCall_(token, 'sendMessage', {
     chat_id: adminChatId,
     reply_to_message_id: callback.message.message_id,
-    text: 'اكتب المبلغ المدفوع للأوردر ' + id + ' (رقم فقط، مثال: 60)',
+    text: 'اكتب المبلغ المدفوع لأوردر ' + orderDisplayLabel_(sheet, row) +
+      ' (رقم فقط، مثال: 60)',
     reply_markup: { force_reply: true, selective: true, input_field_placeholder: 'مثال: 60' }
   });
   PropertiesService.getScriptProperties().setProperty('PENDING_PROMPT_' + prompt.message_id,
@@ -269,7 +270,8 @@ function pendingForReply_(msg) {
 function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
   const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
   if (ORDER_STAGES.includes(status) || status === 'مؤكد') {
-    reply_(token, msg, 'الأوردر مؤكد بالفعل. لم أغيّر المبلغ.');
+    reply_(token, msg, 'أوردر ' + orderDisplayLabel_(sheet, row) +
+      ' مؤكد بالفعل. لم أغيّر المبلغ.');
     return false;
   }
   const total = parseAmount_(String(sheet.getRange(row, 6).getDisplayValue()));
@@ -282,7 +284,7 @@ function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
     .setValues([['تم التأكيد', amount, remainder, new Date()]]);
   syncOrderStage_(row);
   const orderId = String(sheet.getRange(row, ORDER_COLUMNS.orderId).getValue() || '');
-  reply_(token, msg, 'تم تحديث الأوردر' + (orderId ? ' ' + orderId : '') +
+  reply_(token, msg, 'تم تأكيد أوردر ' + orderDisplayLabel_(sheet, row) +
     ' ✅\nالمدفوع: ' + amount + ' ج.م\nالباقي بعد التقريب: ' + remainder + ' ج.م');
   if (orderMessageId && orderId) {
     try {
@@ -299,6 +301,14 @@ function statusValidation_() {
   return SpreadsheetApp.newDataValidation()
     .requireValueInList(['جديد'].concat(ORDER_STAGES), true)
     .setAllowInvalid(false).build();
+}
+
+function orderDisplayLabel_(sheet, row) {
+  const clean = value => String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const child = clean(sheet.getRange(row, ORDER_COLUMNS.childName).getDisplayValue());
+  if (child) return 'الطفل ' + child;
+  const parent = clean(sheet.getRange(row, 1).getDisplayValue());
+  return parent ? 'العميل ' + parent : 'الطلب';
 }
 
 function ensureStageSheet_(name) {
@@ -428,7 +438,7 @@ function notifyTelegramStatus_(row) {
   try {
     telegramCall_(props.getProperty('BOT_TOKEN'), 'sendMessage', {
       chat_id: props.getProperty('ADMIN_CHAT_ID'), reply_to_message_id: Number(messageId),
-      text: 'حالة الأوردر ' + id + ': ' + status + ' ✅'
+      text: 'حالة أوردر ' + orderDisplayLabel_(sheet, row) + ': ' + status + ' ✅'
     });
   } catch (error) { console.error('Telegram status notice: ' + error); }
 }
