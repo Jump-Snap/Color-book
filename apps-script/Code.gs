@@ -3,8 +3,14 @@
 const ORDERS_SHEET_NAME = 'Sheet1';
 const ORDER_COLUMNS = {
   childName: 10, orderId: 16, telegramMessageId: 17,
-  status: 18, deposit: 19, remainder: 20, confirmedAt: 21
+  status: 18, deposit: 19, remainder: 20, confirmedAt: 21, orderDate: 22
 };
+const ORDER_STAGES = ['تم التأكيد', 'تم الشحن', 'تم التوصيل'];
+const STAGE_HEADERS = [
+  'تاريخ الأوردر', 'رقم الطلب', 'الاسم', 'رقم التليفون', 'العنوان',
+  'المحافظة', 'الباقة', 'السعر الإجمالي', 'المبلغ المدفوع', 'الباقي',
+  'الحالة', 'ملاحظات', 'اسم الطفل', 'رقم رسالة تليجرام'
+];
 
 function ordersSheet_() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(ORDERS_SHEET_NAME);
@@ -21,7 +27,8 @@ function prepareOrdersSheet() {
     [ORDER_COLUMNS.status, 'حالة الطلب'],
     [ORDER_COLUMNS.deposit, 'المبلغ المدفوع'],
     [ORDER_COLUMNS.remainder, 'الباقي'],
-    [ORDER_COLUMNS.confirmedAt, 'وقت التأكيد']
+    [ORDER_COLUMNS.confirmedAt, 'وقت التأكيد'],
+    [ORDER_COLUMNS.orderDate, 'تاريخ الأوردر']
   ];
   headers.forEach(([column, label]) => {
     const cell = sheet.getRange(1, column);
@@ -31,6 +38,27 @@ function prepareOrdersSheet() {
   sheet.getRange('P:Q').setNumberFormat('@');
   sheet.getRange('S:T').setNumberFormat('0.00');
   sheet.getRange('U:U').setNumberFormat('yyyy-mm-dd hh:mm');
+  sheet.getRange('V:V').setNumberFormat('yyyy-mm-dd hh:mm');
+  sheet.getRange('R2:R').setDataValidation(statusValidation_());
+}
+
+function prepareWorkflowSheets() {
+  prepareOrdersSheet();
+  ORDER_STAGES.forEach(ensureStageSheet_);
+  const sheet = ordersSheet_();
+  for (let row = 2; row <= sheet.getLastRow(); row++) {
+    if (sheet.getRange(row, ORDER_COLUMNS.orderId).getValue()) {
+      syncOrderStage_(row);
+      refreshTelegramKeyboard_(row);
+    }
+  }
+}
+
+function installWorkflowEditing() {
+  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'onStatusEdit')) {
+    ScriptApp.newTrigger('onStatusEdit').forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+      .onEdit().create();
+  }
 }
 
 function doPost(e) {
@@ -52,7 +80,7 @@ function doPost(e) {
       if (existingRow) return textResponse_('Already received');
 
       const row = sheet.getLastRow() + 1;
-      const cells = new Array(21).fill('');
+      const cells = new Array(22).fill('');
       cells[0] = safeCell_(order.name);
       cells[1] = String(order.phone).trim();
       cells[2] = safeCell_(order.address);
@@ -65,6 +93,7 @@ function doPost(e) {
       cells[9] = safeCell_(order.childName || '');
       cells[15] = orderId;
       cells[17] = 'جديد';
+      cells[21] = new Date();
       sheet.getRange(row, 2).setNumberFormat('@');
       sheet.getRange(row, ORDER_COLUMNS.orderId, 1, 2).setNumberFormat('@');
       sheet.getRange(row, 1, 1, cells.length).setValues([cells]);
@@ -120,9 +149,13 @@ function pollTelegramReplies() {
     const updates = telegramCall_(token, 'getUpdates', {
       offset: offset, limit: 100, timeout: 0, allowed_updates: ['message', 'callback_query']
     });
+    console.log('Telegram polling: ' + updates.length + ' update(s), offset ' + offset);
     updates.forEach(update => {
       try {
-        if (update.callback_query) processDepositButton_(update.callback_query, token, adminChatId);
+        if (update.callback_query) {
+          console.log('Telegram callback: ' + String(update.callback_query.data || '').split(':')[0]);
+          processDepositButton_(update.callback_query, token, adminChatId);
+        }
         const msg = update.message;
         if (msg && String(msg.chat.id) === String(adminChatId)) processReply_(msg, token);
       } catch (error) {
@@ -176,13 +209,18 @@ function processDepositButton_(callback, token, adminChatId) {
   const data = String(callback.data || '');
   if (String(callback.from.id) !== String(adminChatId) ||
       String(callback.message && callback.message.chat.id) !== String(adminChatId)) {
-    telegramCall_(token, 'answerCallbackQuery', {
+    console.error('Telegram callback rejected: wrong admin ID');
+    answerCallbackSafely_(token, {
       callback_query_id: callback.id, text: 'الزر ده مخصص لصاحب الأوردرات فقط', show_alert: true
     });
     return;
   }
+  if (data.startsWith('status:')) {
+    processStatusButton_(callback, token);
+    return;
+  }
   if (!data.startsWith('deposit:')) {
-    telegramCall_(token, 'answerCallbackQuery', { callback_query_id: callback.id });
+    answerCallbackSafely_(token, { callback_query_id: callback.id });
     return;
   }
   const sheet = ordersSheet_();
@@ -190,18 +228,17 @@ function processDepositButton_(callback, token, adminChatId) {
   const row = findRowByValue_(sheet, ORDER_COLUMNS.orderId, id);
   if (!row || String(sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).getDisplayValue()) !==
       String(callback.message.message_id)) {
-    telegramCall_(token, 'answerCallbackQuery', {
+    answerCallbackSafely_(token, {
       callback_query_id: callback.id, text: 'لم أجد الأوردر في الشيت', show_alert: true
     });
     return;
   }
-  if (String(sheet.getRange(row, ORDER_COLUMNS.status).getValue()) === 'مؤكد') {
-    telegramCall_(token, 'answerCallbackQuery', {
+  if (ORDER_STAGES.includes(String(sheet.getRange(row, ORDER_COLUMNS.status).getValue()))) {
+    answerCallbackSafely_(token, {
       callback_query_id: callback.id, text: 'الديبوزيت مؤكد بالفعل', show_alert: true
     });
     return;
   }
-  telegramCall_(token, 'answerCallbackQuery', { callback_query_id: callback.id });
   const prompt = telegramCall_(token, 'sendMessage', {
     chat_id: adminChatId,
     reply_to_message_id: callback.message.message_id,
@@ -211,6 +248,12 @@ function processDepositButton_(callback, token, adminChatId) {
   PropertiesService.getScriptProperties().setProperty('PENDING_PROMPT_' + prompt.message_id,
     JSON.stringify({ row: row, promptMessageId: prompt.message_id,
       orderMessageId: callback.message.message_id, createdAt: Date.now() }));
+  answerCallbackSafely_(token, { callback_query_id: callback.id });
+}
+
+function answerCallbackSafely_(token, payload) {
+  try { telegramCall_(token, 'answerCallbackQuery', payload); }
+  catch (error) { console.log('Callback answer expired: ' + error.message); }
 }
 
 function pendingForReply_(msg) {
@@ -225,7 +268,7 @@ function pendingForReply_(msg) {
 
 function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
   const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
-  if (status === 'مؤكد') {
+  if (ORDER_STAGES.includes(status) || status === 'مؤكد') {
     reply_(token, msg, 'الأوردر مؤكد بالفعل. لم أغيّر المبلغ.');
     return false;
   }
@@ -236,7 +279,8 @@ function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
   }
   const remainder = roundedRemainder_(total, amount);
   sheet.getRange(row, ORDER_COLUMNS.status, 1, 4)
-    .setValues([['مؤكد', amount, remainder, new Date()]]);
+    .setValues([['تم التأكيد', amount, remainder, new Date()]]);
+  syncOrderStage_(row);
   const orderId = String(sheet.getRange(row, ORDER_COLUMNS.orderId).getValue() || '');
   reply_(token, msg, 'تم تحديث الأوردر' + (orderId ? ' ' + orderId : '') +
     ' ✅\nالمدفوع: ' + amount + ' ج.م\nالباقي بعد التقريب: ' + remainder + ' ج.م');
@@ -244,13 +288,151 @@ function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
     try {
       telegramCall_(token, 'editMessageReplyMarkup', {
         chat_id: msg.chat.id, message_id: orderMessageId,
-        reply_markup: { inline_keyboard: [[{
-          text: '✅ ديبوزيت مؤكد: ' + amount + ' ج.م', callback_data: 'paid:' + orderId
-        }]] }
+        reply_markup: statusKeyboard_('تم التأكيد', orderId)
       });
     } catch (error) { console.error('Button update: ' + error); }
   }
   return true;
+}
+
+function statusValidation_() {
+  return SpreadsheetApp.newDataValidation()
+    .requireValueInList(['جديد'].concat(ORDER_STAGES), true)
+    .setAllowInvalid(false).build();
+}
+
+function ensureStageSheet_(name) {
+  const book = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = book.getSheetByName(name);
+  if (sheet) return sheet;
+  sheet = book.insertSheet(name);
+  sheet.getRange(1, 1, 1, STAGE_HEADERS.length).setValues([STAGE_HEADERS])
+    .setFontWeight('bold').setBackground('#dceaf7');
+  sheet.setFrozenRows(1);
+  sheet.getRange('A2:A').setNumberFormat('yyyy-mm-dd hh:mm');
+  sheet.getRange('B2:B').setNumberFormat('@');
+  sheet.getRange('D2:D').setNumberFormat('@');
+  sheet.getRange('I2:J').setNumberFormat('0.00');
+  sheet.getRange('K2:K').setDataValidation(statusValidation_());
+  sheet.setColumnWidth(1, 150);
+  sheet.setColumnWidth(3, 160);
+  sheet.setColumnWidth(5, 260);
+  return sheet;
+}
+
+function stageRowFromOrder_(sheet, row) {
+  const v = sheet.getRange(row, 1, 1, ORDER_COLUMNS.orderDate).getValues()[0];
+  return [v[21], v[15], v[0], v[1], v[2], v[3], v[4], v[5],
+    v[18], v[19], v[17], v[6], v[9], v[16]];
+}
+
+function syncOrderStage_(row) {
+  const source = ordersSheet_();
+  const id = String(source.getRange(row, ORDER_COLUMNS.orderId).getDisplayValue() || '');
+  if (!id) return;
+  let status = String(source.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+  if (status === 'مؤكد') {
+    status = 'تم التأكيد';
+    source.getRange(row, ORDER_COLUMNS.status).setValue(status);
+  }
+  const projected = stageRowFromOrder_(source, row);
+  ORDER_STAGES.forEach(name => {
+    const view = ensureStageSheet_(name);
+    const existing = findRowByValue_(view, 2, id);
+    if (name === status) {
+      const target = existing || view.getLastRow() + 1;
+      view.getRange(target, 1, 1, STAGE_HEADERS.length).setValues([projected]);
+    } else if (existing) {
+      view.deleteRow(existing);
+    }
+  });
+}
+
+function onStatusEdit(e) {
+  if (!e || !e.range || e.range.getNumRows() !== 1 || e.range.getNumColumns() !== 1) return;
+  const edited = e.range.getSheet();
+  const row = e.range.getRow();
+  const col = e.range.getColumn();
+  if (row < 2 || (edited.getName() === ORDERS_SHEET_NAME && col !== ORDER_COLUMNS.status) ||
+      (ORDER_STAGES.includes(edited.getName()) && col !== 11)) return;
+  if (edited.getName() !== ORDERS_SHEET_NAME && !ORDER_STAGES.includes(edited.getName())) return;
+  const status = String(e.range.getValue() || '');
+  if (!['جديد'].concat(ORDER_STAGES).includes(status)) return;
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const source = ordersSheet_();
+    const sourceRow = edited.getName() === ORDERS_SHEET_NAME ? row :
+      findRowByValue_(source, ORDER_COLUMNS.orderId, edited.getRange(row, 2).getDisplayValue());
+    if (!sourceRow) throw new Error('Order ID not found in Sheet1');
+    source.getRange(sourceRow, ORDER_COLUMNS.status).setValue(status);
+    syncOrderStage_(sourceRow);
+    refreshTelegramKeyboard_(sourceRow);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function statusKeyboard_(status, id) {
+  if (status === 'تم التأكيد') return { inline_keyboard: [[{
+    text: '🚚 تم الشحن', callback_data: 'status:ship:' + id
+  }]] };
+  if (status === 'تم الشحن') return { inline_keyboard: [[{
+    text: '📦 تم التوصيل', callback_data: 'status:deliver:' + id
+  }]] };
+  if (status === 'تم التوصيل') return { inline_keyboard: [] };
+  return { inline_keyboard: [[{
+    text: '💰 تأكيد الديبوزيت', callback_data: 'deposit:' + id
+  }]] };
+}
+
+function refreshTelegramKeyboard_(row) {
+  const sheet = ordersSheet_();
+  const id = String(sheet.getRange(row, ORDER_COLUMNS.orderId).getDisplayValue() || '');
+  const messageId = String(sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).getDisplayValue() || '');
+  const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+  if (!id || !messageId) return;
+  const props = PropertiesService.getScriptProperties();
+  try {
+    telegramCall_(props.getProperty('BOT_TOKEN'), 'editMessageReplyMarkup', {
+      chat_id: props.getProperty('ADMIN_CHAT_ID'), message_id: Number(messageId),
+      reply_markup: statusKeyboard_(status, id)
+    });
+  } catch (error) { console.error('Telegram button refresh: ' + error); }
+}
+
+function processStatusButton_(callback, token) {
+  const match = String(callback.data || '').match(/^status:(ship|deliver):(JS-[A-Za-z0-9-]{8,50})$/);
+  if (!match) {
+    answerCallbackSafely_(token, { callback_query_id: callback.id, text: 'حالة غير معروفة' });
+    return;
+  }
+  const id = match[2];
+  const previous = match[1] === 'ship' ? 'تم التأكيد' : 'تم الشحن';
+  const next = match[1] === 'ship' ? 'تم الشحن' : 'تم التوصيل';
+  const sheet = ordersSheet_();
+  const row = findRowByValue_(sheet, ORDER_COLUMNS.orderId, id);
+  if (!row || String(sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).getDisplayValue()) !==
+      String(callback.message.message_id)) {
+    answerCallbackSafely_(token, { callback_query_id: callback.id,
+      text: 'لم أجد الأوردر في الشيت', show_alert: true });
+    return;
+  }
+  const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+  if (status !== previous) {
+    answerCallbackSafely_(token, { callback_query_id: callback.id,
+      text: 'حالة الأوردر الحالية: ' + status, show_alert: true });
+    refreshTelegramKeyboard_(row);
+    return;
+  }
+  sheet.getRange(row, ORDER_COLUMNS.status).setValue(next);
+  syncOrderStage_(row);
+  refreshTelegramKeyboard_(row);
+  answerCallbackSafely_(token, { callback_query_id: callback.id });
+  telegramCall_(token, 'sendMessage', {
+    chat_id: callback.message.chat.id, reply_to_message_id: callback.message.message_id,
+    text: 'تم تغيير حالة الأوردر ' + id + ' إلى ' + next + ' ✅'
+  });
 }
 
 function parsePlainAmount_(text) {
