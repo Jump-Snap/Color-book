@@ -69,6 +69,11 @@ function doPost(e) {
       sheet.getRange(row, ORDER_COLUMNS.orderId, 1, 2).setNumberFormat('@');
       sheet.getRange(row, 1, 1, cells.length).setValues([cells]);
 
+      // The current public site still sends its own Telegram message. It does
+      // not include orderId; only the updated site does. Avoid duplicate alerts
+      // while the Apps Script deployment and site update happen in sequence.
+      if (!validOrderId_(order.orderId)) return textResponse_('Saved ' + orderId);
+
       try {
         const sent = telegramCall_(token, 'sendMessage', {
           chat_id: chatId,
