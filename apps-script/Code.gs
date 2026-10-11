@@ -345,7 +345,17 @@ function syncOrderStage_(row) {
     } else if (existing) {
       view.deleteRow(existing);
     }
+    compactStageSheet_(view);
   });
+}
+
+function compactStageSheet_(sheet) {
+  const last = sheet.getLastRow();
+  if (last < 3) return;
+  const rows = sheet.getRange(2, 1, last - 1, STAGE_HEADERS.length).getDisplayValues();
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (rows[i].every(value => !String(value).trim())) sheet.deleteRow(i + 2);
+  }
 }
 
 function onStatusEdit(e) {
@@ -368,6 +378,7 @@ function onStatusEdit(e) {
     source.getRange(sourceRow, ORDER_COLUMNS.status).setValue(status);
     syncOrderStage_(sourceRow);
     refreshTelegramKeyboard_(sourceRow);
+    notifyTelegramStatus_(sourceRow);
   } finally {
     lock.releaseLock();
   }
@@ -400,7 +411,26 @@ function refreshTelegramKeyboard_(row) {
     const markup = statusKeyboard_(status, id);
     if (markup) payload.reply_markup = markup;
     telegramCall_(props.getProperty('BOT_TOKEN'), 'editMessageReplyMarkup', payload);
-  } catch (error) { console.error('Telegram button refresh: ' + error); }
+  } catch (error) {
+    if (!String(error.message || error).includes('message is not modified')) {
+      console.error('Telegram button refresh: ' + error);
+    }
+  }
+}
+
+function notifyTelegramStatus_(row) {
+  const sheet = ordersSheet_();
+  const id = String(sheet.getRange(row, ORDER_COLUMNS.orderId).getDisplayValue() || '');
+  const messageId = String(sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).getDisplayValue() || '');
+  const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+  if (!id || !messageId) return;
+  const props = PropertiesService.getScriptProperties();
+  try {
+    telegramCall_(props.getProperty('BOT_TOKEN'), 'sendMessage', {
+      chat_id: props.getProperty('ADMIN_CHAT_ID'), reply_to_message_id: Number(messageId),
+      text: 'حالة الأوردر ' + id + ': ' + status + ' ✅'
+    });
+  } catch (error) { console.error('Telegram status notice: ' + error); }
 }
 
 function processStatusButton_(callback, token) {
@@ -431,10 +461,7 @@ function processStatusButton_(callback, token) {
   syncOrderStage_(row);
   refreshTelegramKeyboard_(row);
   answerCallbackSafely_(token, { callback_query_id: callback.id });
-  telegramCall_(token, 'sendMessage', {
-    chat_id: callback.message.chat.id, reply_to_message_id: callback.message.message_id,
-    text: 'تم تغيير حالة الأوردر ' + id + ' إلى ' + next + ' ✅'
-  });
+  notifyTelegramStatus_(row);
 }
 
 function parsePlainAmount_(text) {
