@@ -380,7 +380,7 @@ function statusKeyboard_(status, id) {
   if (status === 'تم الشحن') return { inline_keyboard: [[{
     text: '📦 تم التوصيل', callback_data: 'status:deliver:' + id
   }]] };
-  if (status === 'تم التوصيل') return { inline_keyboard: [] };
+  if (status === 'تم التوصيل') return null;
   return { inline_keyboard: [[{
     text: '💰 تأكيد الديبوزيت', callback_data: 'deposit:' + id
   }]] };
@@ -394,10 +394,12 @@ function refreshTelegramKeyboard_(row) {
   if (!id || !messageId) return;
   const props = PropertiesService.getScriptProperties();
   try {
-    telegramCall_(props.getProperty('BOT_TOKEN'), 'editMessageReplyMarkup', {
-      chat_id: props.getProperty('ADMIN_CHAT_ID'), message_id: Number(messageId),
-      reply_markup: statusKeyboard_(status, id)
-    });
+    const payload = {
+      chat_id: props.getProperty('ADMIN_CHAT_ID'), message_id: Number(messageId)
+    };
+    const markup = statusKeyboard_(status, id);
+    if (markup) payload.reply_markup = markup;
+    telegramCall_(props.getProperty('BOT_TOKEN'), 'editMessageReplyMarkup', payload);
   } catch (error) { console.error('Telegram button refresh: ' + error); }
 }
 
