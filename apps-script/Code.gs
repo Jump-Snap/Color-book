@@ -6,6 +6,7 @@ const ORDER_COLUMNS = {
   status: 18, deposit: 19, remainder: 20, confirmedAt: 21, orderDate: 22
 };
 const ORDER_STAGES = ['تم التأكيد', 'تم الشحن', 'تم التوصيل'];
+const DEPOSIT_APP_URL = 'https://jump-snap.github.io/Color-book/deposit.html';
 const STAGE_HEADERS = [
   'تاريخ الأوردر', 'رقم الطلب', 'الاسم', 'رقم التليفون', 'العنوان',
   'المحافظة', 'الباقة', 'السعر الإجمالي', 'المبلغ المدفوع', 'الباقي',
@@ -65,6 +66,7 @@ function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) throw new Error('Empty request');
     const order = JSON.parse(e.postData.contents);
+    if (order.action === 'confirmDepositWebApp') return confirmDepositWebApp_(order);
     const required = ['name', 'phone', 'address', 'governorate', 'package', 'totalPrice'];
     required.forEach(key => { if (!String(order[key] || '').trim()) throw new Error('Missing ' + key); });
     const token = PropertiesService.getScriptProperties().getProperty('BOT_TOKEN');
@@ -108,9 +110,7 @@ function doPost(e) {
           chat_id: chatId,
           text: orderMessage_(order, orderId),
           parse_mode: 'HTML',
-          reply_markup: { inline_keyboard: [[{
-            text: '💰 تأكيد الديبوزيت', callback_data: 'deposit:' + orderId
-          }]] }
+          reply_markup: statusKeyboard_('جديد', orderId)
         });
         sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).setValue(String(sent.message_id));
       } catch (telegramError) {
@@ -125,6 +125,59 @@ function doPost(e) {
     console.error(error);
     return textResponse_('Error: ' + error.message);
   }
+}
+
+function confirmDepositWebApp_(request) {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('BOT_TOKEN');
+  const adminChatId = props.getProperty('ADMIN_CHAT_ID');
+  if (!token || !adminChatId) throw new Error('Missing bot settings');
+  validateTelegramInitData_(request.initData, token, adminChatId);
+  const id = validOrderId_(request.orderId);
+  const amount = parsePlainAmount_(request.amount);
+  if (!id || !amount) throw new Error('Invalid order or amount');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const sheet = ordersSheet_();
+    const row = findRowByValue_(sheet, ORDER_COLUMNS.orderId, id);
+    if (!row) throw new Error('Order not found');
+    const messageId = Number(sheet.getRange(row, ORDER_COLUMNS.telegramMessageId).getDisplayValue());
+    if (!messageId) throw new Error('Telegram order message not found');
+    const msg = { chat: { id: adminChatId }, message_id: messageId };
+    const saved = confirmDeposit_(sheet, row, amount, token, msg, messageId);
+    return textResponse_(saved ? 'Confirmed' : 'Not confirmed');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function validateTelegramInitData_(raw, token, adminChatId) {
+  if (typeof raw !== 'string' || !raw || raw.length > 16000) throw new Error('Telegram login required');
+  const data = {};
+  raw.split('&').forEach(part => {
+    const separator = part.indexOf('=');
+    if (separator < 1) throw new Error('Invalid Telegram data');
+    const key = decodeURIComponent(part.slice(0, separator).replace(/\+/g, ' '));
+    const value = decodeURIComponent(part.slice(separator + 1).replace(/\+/g, ' '));
+    if (Object.prototype.hasOwnProperty.call(data, key)) throw new Error('Duplicate Telegram field');
+    data[key] = value;
+  });
+  if (!/^[a-f0-9]{64}$/i.test(data.hash || '')) throw new Error('Telegram hash missing');
+  const check = Object.keys(data).filter(key => key !== 'hash').sort()
+    .map(key => key + '=' + data[key]).join('\n');
+  const key = Utilities.computeHmacSha256Signature(
+    Utilities.newBlob(token).getBytes(), Utilities.newBlob('WebAppData').getBytes());
+  const signed = Utilities.computeHmacSha256Signature(Utilities.newBlob(check).getBytes(), key);
+  const expected = signed.map(byte => ('0' + (byte & 255).toString(16)).slice(-2)).join('');
+  let difference = 0;
+  const received = data.hash.toLowerCase();
+  for (let i = 0; i < 64; i++) difference |= expected.charCodeAt(i) ^ received.charCodeAt(i);
+  if (difference !== 0) throw new Error('Telegram signature invalid');
+  const age = Date.now() / 1000 - Number(data.auth_date);
+  if (!Number.isFinite(age) || age < -60 || age > 86400) throw new Error('Telegram login expired');
+  const user = JSON.parse(data.user || '{}');
+  if (String(user.id) !== String(adminChatId)) throw new Error('This Telegram user is not authorized');
 }
 
 function installReplyPolling() {
@@ -403,8 +456,16 @@ function statusKeyboard_(status, id) {
   }]] };
   if (status === 'تم التوصيل') return null;
   return { inline_keyboard: [[{
-    text: '💰 تأكيد الديبوزيت', callback_data: 'deposit:' + id
+    text: '💰 تأكيد الديبوزيت', web_app: { url: DEPOSIT_APP_URL + '?orderId=' + encodeURIComponent(id) }
   }]] };
+}
+
+function upgradeDepositButtons() {
+  const sheet = ordersSheet_();
+  for (let row = 2; row <= sheet.getLastRow(); row++) {
+    const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+    if (status === 'جديد') refreshTelegramKeyboard_(row);
+  }
 }
 
 function refreshTelegramKeyboard_(row) {
