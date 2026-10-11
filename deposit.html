@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تأكيد الديبوزيت</title>
+  <script src="https://telegram.org/js/telegram-web-app.js?64"></script>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: var(--tg-theme-bg-color, #f5f7fa); color: var(--tg-theme-text-color, #17202a); }
+    main { max-width: 420px; margin: 32px auto; padding: 24px; }
+    h1 { font-size: 24px; margin: 0 0 10px; }
+    p { color: var(--tg-theme-hint-color, #64748b); line-height: 1.6; }
+    label { display: block; font-weight: 700; margin: 26px 0 10px; }
+    input { box-sizing: border-box; width: 100%; font: inherit; font-size: 28px; padding: 14px; border: 1px solid #a4b0be; border-radius: 12px; background: var(--tg-theme-secondary-bg-color, #fff); color: var(--tg-theme-text-color, #17202a); direction: ltr; text-align: center; }
+    button { width: 100%; margin-top: 18px; padding: 15px; border: 0; border-radius: 12px; background: var(--tg-theme-button-color, #2387cf); color: var(--tg-theme-button-text-color, #fff); font: inherit; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .55; cursor: wait; }
+    #notice { min-height: 2em; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>💰 تأكيد الديبوزيت</h1>
+    <p>اكتب المبلغ اللي العميل دفعه. بعد الإرسال، رسالة البوت هتأكد التسجيل في الشيت.</p>
+    <form id="depositForm">
+      <label for="amount">المبلغ المدفوع بالجنيه</label>
+      <input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" placeholder="مثال: 100" required autofocus>
+      <button id="save" type="submit">تسجيل الديبوزيت</button>
+    </form>
+    <p id="notice" role="status" aria-live="polite"></p>
+  </main>
+  <script>
+    (() => {
+      const endpoint = 'https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec';
+      const app = window.Telegram && window.Telegram.WebApp;
+      const orderId = new URLSearchParams(location.search).get('orderId');
+      const form = document.getElementById('depositForm');
+      const input = document.getElementById('amount');
+      const button = document.getElementById('save');
+      const notice = document.getElementById('notice');
+      if (!app || !app.initData || !/^JS-[A-Za-z0-9-]{8,50}$/.test(orderId || '')) {
+        form.hidden = true;
+        notice.textContent = 'افتح الصفحة من زر الأوردر داخل تليجرام.';
+        return;
+      }
+      app.ready();
+      app.expand();
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const amount = input.value.replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c))
+          .replace(/[۰-۹]/g, c => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).trim();
+        if (!/^[0-9]+(?:[.,][0-9]{1,2})?$/.test(amount) || Number(amount.replace(',', '.')) <= 0) {
+          notice.textContent = 'اكتب مبلغًا صحيحًا، مثل 100 أو 100.50';
+          return;
+        }
+        button.disabled = true;
+        notice.textContent = 'جاري إرسال المبلغ...';
+        try {
+          await fetch(endpoint, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'confirmDepositWebApp', orderId, amount, initData: app.initData })
+          });
+          notice.textContent = 'تم إرسال المبلغ. انتظر رسالة تأكيد البوت في تليجرام قبل اعتبار الأوردر مؤكدًا.';
+        } catch (error) {
+          button.disabled = false;
+          notice.textContent = 'تعذر الإرسال. تأكد من الإنترنت وحاول مرة أخرى.';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
