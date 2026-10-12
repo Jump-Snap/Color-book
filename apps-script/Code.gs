@@ -519,7 +519,7 @@ function syncShippingQueue_(sourceRow) {
   const city = shippingCity_(data[3]);
   shipping.getRange(target, 2).setValue(shippingDescription_(data[4]));
   shipping.getRange(target, 3).setValue(1);
-  if (!existing) shipping.getRange(target, 4).clearContent();
+  shipping.getRange(target, 4).setValue('Small');
   shipping.getRange(target, 5).setValue(parseAmount_(data[19]));
   shipping.getRange(target, 6).clearContent();
   shipping.getRange(target, 8).setNumberFormat('@');
