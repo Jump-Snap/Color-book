@@ -509,7 +509,7 @@ function syncShippingQueue_(sourceRow) {
   const id = String(source.getRange(sourceRow, ORDER_COLUMNS.orderId).getDisplayValue() || '').trim();
   if (!id) return;
   const status = String(source.getRange(sourceRow, ORDER_COLUMNS.status).getValue() || '');
-  const existing = findRowByValue_(shipping, 11, id);
+  const existing = findShippingOrderRow_(shipping, id);
   if (status !== 'تم التأكيد') {
     if (existing) shipping.deleteRow(existing);
     return;
@@ -517,24 +517,47 @@ function syncShippingQueue_(sourceRow) {
   const data = source.getRange(sourceRow, 1, 1, ORDER_COLUMNS.orderDate).getDisplayValues()[0];
   const target = existing || firstFreeShippingRow_(shipping);
   const city = shippingCity_(data[3]);
-  const notes = city ? data[6] :
-    [data[6], data[3] ? 'المحافظة: ' + data[3] : ''].filter(Boolean).join(' | ');
-  shipping.getRange(target, 2).setValue(data[4]);
+  shipping.getRange(target, 2).setValue(shippingDescription_(data[4]));
   shipping.getRange(target, 3).setValue(1);
   if (!existing) shipping.getRange(target, 4).clearContent();
   shipping.getRange(target, 5).setValue(parseAmount_(data[19]));
-  shipping.getRange(target, 6).setValue(notes);
+  shipping.getRange(target, 6).clearContent();
   shipping.getRange(target, 8).setNumberFormat('@');
   shipping.getRange(target, 7, 1, 5)
-    .setValues([[data[0], data[1], data[2], city, id]]);
+    .setValues([[data[0], shippingPhone_(data[1]), data[2], city, '']]);
+  shipping.getRange(target, 7).setNote('JumpSnapOrderId=' + id);
   shipping.getRange(target, 12, 1, 4)
     .setValues([['Jump Snap', 'Jump Snap', 'yes', 'Jump Snap']]);
+}
+
+function shippingDescription_(value) {
+  const text = String(value || '').replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c))
+    .replace(/[۰-۹]/g, c => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c));
+  const match = text.match(/(?:^|[^0-9])(1|3|6)(?![0-9])/);
+  const count = match ? Number(match[1]) : /كتاب\s*واحد|كتاب\s*واحدة/.test(text) ? 1 : 0;
+  return count ? count + (count === 1 ? ' كتاب تلوين' : ' كتب تلوين') : '';
+}
+
+function shippingPhone_(value) {
+  let digits = String(value || '').replace(/[٠-٩]/g, c => '٠١٢٣٤٥٦٧٨٩'.indexOf(c))
+    .replace(/[۰-۹]/g, c => '۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[^0-9]/g, '');
+  if (digits.startsWith('0020')) digits = digits.slice(4);
+  else if (digits.startsWith('20') && digits.length >= 12) digits = digits.slice(2);
+  return digits && !digits.startsWith('0') ? '0' + digits : digits;
+}
+
+function findShippingOrderRow_(sheet, id) {
+  if (sheet.getLastRow() < 2) return 0;
+  const notes = sheet.getRange(2, 7, sheet.getLastRow() - 1, 1).getNotes();
+  const index = notes.findIndex(row => row[0] === 'JumpSnapOrderId=' + id);
+  // Migrate an existing export row before clearing its visible reference.
+  return index >= 0 ? index + 2 : findRowByValue_(sheet, 11, id);
 }
 
 function firstFreeShippingRow_(sheet) {
   const last = sheet.getLastRow();
   if (last < 2) return 2;
-  const references = sheet.getRange(2, 11, last - 1, 1).getDisplayValues();
+  const references = sheet.getRange(2, 7, last - 1, 1).getDisplayValues();
   const blank = references.findIndex(row => !String(row[0]).trim());
   return blank < 0 ? last + 1 : blank + 2;
 }
