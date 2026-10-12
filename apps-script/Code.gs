@@ -6,6 +6,7 @@ const ORDER_COLUMNS = {
   status: 18, deposit: 19, remainder: 20, confirmedAt: 21, orderDate: 22
 };
 const ORDER_STAGES = ['تم التأكيد', 'تم الشحن', 'تم التوصيل'];
+const SHIPPING_SHEET_NAME = 'Sheet1 (1)';
 const DEPOSIT_APP_URL = 'https://jump-snap.github.io/Color-book/deposit.html';
 const STAGE_HEADERS = [
   'تاريخ الأوردر', 'رقم الطلب', 'الاسم', 'رقم التليفون', 'العنوان',
@@ -46,13 +47,66 @@ function prepareOrdersSheet() {
 function prepareWorkflowSheets() {
   prepareOrdersSheet();
   ORDER_STAGES.forEach(ensureStageSheet_);
-  const sheet = ordersSheet_();
-  for (let row = 2; row <= sheet.getLastRow(); row++) {
-    if (sheet.getRange(row, ORDER_COLUMNS.orderId).getValue()) {
+  reconcileAllOrders();
+}
+
+// Run once after installing this version. It keeps historical rows and their unknown dates intact.
+function reconcileAllOrders() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const sheet = ordersSheet_();
+    ORDER_STAGES.forEach(ensureStageSheet_);
+    for (let row = 2; row <= sheet.getLastRow(); row++) {
+      if (!hasOrderData_(sheet, row)) continue;
+      ensureOrderIdentity_(sheet, row, false);
+      normalizeOrderAmounts_(sheet, row, true);
+      const statusCell = sheet.getRange(row, ORDER_COLUMNS.status);
+      const status = String(statusCell.getValue() || '').trim();
+      if (!status || status === 'مؤكد') {
+        const paid = parseAmount_(sheet.getRange(row, ORDER_COLUMNS.deposit).getDisplayValue());
+        statusCell.setValue(paid > 0 ? 'تم التأكيد' : 'جديد');
+      }
       syncOrderStage_(row);
-      refreshTelegramKeyboard_(row);
+      syncShippingQueue_(row);
     }
+  } finally {
+    lock.releaseLock();
   }
+}
+
+function hasOrderData_(sheet, row) {
+  const cells = sheet.getRange(row, 1, 1, 10).getDisplayValues()[0];
+  return [cells[0], cells[1], cells[2], cells[5], cells[9]].some(value => String(value).trim());
+}
+
+function ensureOrderIdentity_(sheet, row, stampDate) {
+  const idCell = sheet.getRange(row, ORDER_COLUMNS.orderId);
+  let id = String(idCell.getDisplayValue() || '').trim();
+  if (!id) {
+    id = 'JS-' + Utilities.getUuid();
+    idCell.setNumberFormat('@').setValue(id);
+  }
+  const dateCell = sheet.getRange(row, ORDER_COLUMNS.orderDate);
+  if (stampDate && !dateCell.getValue()) dateCell.setValue(new Date());
+  return id;
+}
+
+function normalizeOrderAmounts_(sheet, row, useLegacyPaid) {
+  const paidCell = sheet.getRange(row, ORDER_COLUMNS.deposit);
+  let paid = parseAmount_(paidCell.getDisplayValue());
+  if (!paid && useLegacyPaid) {
+    paid = parseAmount_(sheet.getRange(row, 12).getDisplayValue());
+    if (paid) paidCell.setValue(paid);
+  }
+  const legacyTotal = parseAmount_(sheet.getRange(row, 11).getDisplayValue());
+  const listedTotal = parseAmount_(sheet.getRange(row, 6).getDisplayValue());
+  const total = legacyTotal || listedTotal;
+  const status = String(sheet.getRange(row, ORDER_COLUMNS.status).getValue() || '');
+  if (total > 0 && paid <= total && (paid > 0 || ORDER_STAGES.includes(status))) {
+    sheet.getRange(row, ORDER_COLUMNS.remainder).setValue(roundedRemainder_(total, paid));
+  }
+  return { total: total, paid: paid, valid: total > 0 && paid <= total };
 }
 
 function installWorkflowEditing() {
@@ -327,7 +381,8 @@ function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
       ' مؤكد بالفعل. لم أغيّر المبلغ.');
     return false;
   }
-  const total = parseAmount_(String(sheet.getRange(row, 6).getDisplayValue()));
+  const total = parseAmount_(sheet.getRange(row, 11).getDisplayValue()) ||
+    parseAmount_(sheet.getRange(row, 6).getDisplayValue());
   if (!total || amount > total) {
     reply_(token, msg, 'المبلغ أكبر من إجمالي الطلب أو السعر غير واضح. راجع الرقم ثم حاول مرة أخرى.');
     return false;
@@ -335,7 +390,9 @@ function confirmDeposit_(sheet, row, amount, token, msg, orderMessageId) {
   const remainder = roundedRemainder_(total, amount);
   sheet.getRange(row, ORDER_COLUMNS.status, 1, 4)
     .setValues([['تم التأكيد', amount, remainder, new Date()]]);
+  ensureOrderIdentity_(sheet, row, false);
   syncOrderStage_(row);
+  syncShippingQueue_(row);
   const orderId = String(sheet.getRange(row, ORDER_COLUMNS.orderId).getValue() || '');
   reply_(token, msg, 'تم تأكيد أوردر ' + orderDisplayLabel_(sheet, row) +
     ' ✅\nالمدفوع: ' + amount + ' ج.م\nالباقي بعد التقريب: ' + remainder + ' ج.م');
@@ -421,27 +478,118 @@ function compactStageSheet_(sheet) {
   }
 }
 
+function shippingCity_(value) {
+  const key = String(value || '').trim().replace(/[\u064b-\u065f]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/\s+/g, ' ').toLowerCase();
+  const cities = {
+    'القاهره': 'CAIRO', 'الجيزه': 'GIZA', 'الاسكندريه': 'ALEXANDRIA',
+    'البحيره': 'BEHIRA', 'القليوبيه': 'QALIUBIA', 'الغربيه': 'GHARBIA',
+    'المنوفيه': 'MONOUFIA', 'دمياط': 'DOMITTA', 'الدقهليه': 'DAKAHLIA',
+    'كفر الشيخ': 'KAFR EL SHEIKH', 'مطروح': 'MARSA MATROUH',
+    'مرسى مطروح': 'MARSA MATROUH', 'الاسماعيليه': 'ISMAILIA',
+    'السويس': 'SUEZ', 'بورسعيد': 'PORT SAID', 'الشرقيه': 'SHARKIA',
+    'الفيوم': 'FAYOUM', 'بني سويف': 'BANI SWEIF', 'المنيا': 'MENIA',
+    'اسيوط': 'ASSIUT', 'سوهاج': 'SOUHAGE', 'قنا': 'QENA',
+    'اسوان': 'ASWAN', 'الاقصر': 'LOUXOR', 'البحر الاحمر': 'RED SEA',
+    'الوادي الجديد': 'NEW VALLLEY', 'شمال سيناء': 'NOURTH SINAI',
+    'جنوب سيناء': 'SOUTH SINAI'
+  };
+  const mapped = cities[key] || String(value || '').trim().toUpperCase();
+  const list = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet2');
+  if (!list || list.getLastRow() < 2) return cities[key] || '';
+  const allowed = list.getRange(2, 5, list.getLastRow() - 1, 1).getDisplayValues()
+    .map(row => row[0]).filter(Boolean);
+  return allowed.includes(mapped) ? mapped : '';
+}
+
+function syncShippingQueue_(sourceRow) {
+  const source = ordersSheet_();
+  const shipping = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHIPPING_SHEET_NAME);
+  if (!shipping) return;
+  const id = String(source.getRange(sourceRow, ORDER_COLUMNS.orderId).getDisplayValue() || '').trim();
+  if (!id) return;
+  const status = String(source.getRange(sourceRow, ORDER_COLUMNS.status).getValue() || '');
+  const existing = findRowByValue_(shipping, 11, id);
+  if (status !== 'تم التأكيد') {
+    if (existing) shipping.deleteRow(existing);
+    return;
+  }
+  const data = source.getRange(sourceRow, 1, 1, ORDER_COLUMNS.orderDate).getDisplayValues()[0];
+  const target = existing || firstFreeShippingRow_(shipping);
+  const city = shippingCity_(data[3]);
+  const notes = city ? data[6] :
+    [data[6], data[3] ? 'المحافظة: ' + data[3] : ''].filter(Boolean).join(' | ');
+  shipping.getRange(target, 2).setValue(data[4]);
+  shipping.getRange(target, 3).setValue(1);
+  if (!existing) shipping.getRange(target, 4).clearContent();
+  shipping.getRange(target, 5).setValue(parseAmount_(data[19]));
+  shipping.getRange(target, 6).setValue(notes);
+  shipping.getRange(target, 8).setNumberFormat('@');
+  shipping.getRange(target, 7, 1, 5)
+    .setValues([[data[0], data[1], data[2], city, id]]);
+  shipping.getRange(target, 12, 1, 4)
+    .setValues([['Jump Snap', 'Jump Snap', 'yes', 'Jump Snap']]);
+}
+
+function firstFreeShippingRow_(sheet) {
+  const last = sheet.getLastRow();
+  if (last < 2) return 2;
+  const references = sheet.getRange(2, 11, last - 1, 1).getDisplayValues();
+  const blank = references.findIndex(row => !String(row[0]).trim());
+  return blank < 0 ? last + 1 : blank + 2;
+}
+
 function onStatusEdit(e) {
-  if (!e || !e.range || e.range.getNumRows() !== 1 || e.range.getNumColumns() !== 1) return;
+  if (!e || !e.range) return;
   const edited = e.range.getSheet();
-  const row = e.range.getRow();
-  const col = e.range.getColumn();
-  if (row < 2 || (edited.getName() === ORDERS_SHEET_NAME && col !== ORDER_COLUMNS.status) ||
-      (ORDER_STAGES.includes(edited.getName()) && col !== 11)) return;
   if (edited.getName() !== ORDERS_SHEET_NAME && !ORDER_STAGES.includes(edited.getName())) return;
-  const status = String(e.range.getValue() || '');
-  if (!['جديد'].concat(ORDER_STAGES).includes(status)) return;
+  const firstCol = e.range.getColumn();
+  const lastCol = firstCol + e.range.getNumColumns() - 1;
+  if (edited.getName() === ORDERS_SHEET_NAME &&
+      !((firstCol <= 12 && lastCol >= 1) || (firstCol <= 19 && lastCol >= 18))) return;
+  if (edited.getName() !== ORDERS_SHEET_NAME && !(firstCol <= 11 && lastCol >= 11)) return;
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     const source = ordersSheet_();
-    const sourceRow = edited.getName() === ORDERS_SHEET_NAME ? row :
-      findRowByValue_(source, ORDER_COLUMNS.orderId, edited.getRange(row, 2).getDisplayValue());
-    if (!sourceRow) throw new Error('Order ID not found in Sheet1');
-    source.getRange(sourceRow, ORDER_COLUMNS.status).setValue(status);
-    syncOrderStage_(sourceRow);
-    refreshTelegramKeyboard_(sourceRow);
-    notifyTelegramStatus_(sourceRow);
+    const statusEdit = edited.getName() !== ORDERS_SHEET_NAME ||
+      (firstCol <= ORDER_COLUMNS.status && lastCol >= ORDER_COLUMNS.status);
+    const paymentEdit = edited.getName() === ORDERS_SHEET_NAME &&
+      ((firstCol <= ORDER_COLUMNS.deposit && lastCol >= ORDER_COLUMNS.deposit) ||
+       (firstCol <= 12 && lastCol >= 12));
+    for (let row = Math.max(2, e.range.getRow());
+         row < e.range.getRow() + e.range.getNumRows(); row++) {
+      const sourceRow = edited.getName() === ORDERS_SHEET_NAME ? row :
+        findRowByValue_(source, ORDER_COLUMNS.orderId, edited.getRange(row, 2).getDisplayValue());
+      if (!sourceRow || !hasOrderData_(source, sourceRow)) continue;
+      const wasStatus = String(source.getRange(sourceRow, ORDER_COLUMNS.status).getValue() || '');
+      const legacy = source.getRange(sourceRow, 11, 1, 3).getDisplayValues()[0].some(Boolean);
+      ensureOrderIdentity_(source, sourceRow, !legacy);
+      const paymentColumnEdited = edited.getName() === ORDERS_SHEET_NAME &&
+        firstCol <= ORDER_COLUMNS.deposit && lastCol >= ORDER_COLUMNS.deposit;
+      const money = normalizeOrderAmounts_(source, sourceRow, !paymentColumnEdited);
+      let status = edited.getName() === ORDERS_SHEET_NAME ? wasStatus :
+        String(edited.getRange(row, 11).getValue() || '');
+      if (paymentEdit && !statusEdit && money.paid > 0 && money.valid &&
+          (!status || status === 'جديد')) status = 'تم التأكيد';
+      if (!status) status = 'جديد';
+      if (!['جديد'].concat(ORDER_STAGES).includes(status)) continue;
+      const previous = edited.getName() === ORDERS_SHEET_NAME && statusEdit &&
+        e.range.getNumRows() === 1 && e.range.getNumColumns() === 1 ?
+        String(e.oldValue || '') : wasStatus;
+      const statusChanged = status !== previous;
+      if (status !== wasStatus) source.getRange(sourceRow, ORDER_COLUMNS.status).setValue(status);
+      if (status === 'تم التأكيد' && statusChanged &&
+          !source.getRange(sourceRow, ORDER_COLUMNS.confirmedAt).getValue()) {
+        source.getRange(sourceRow, ORDER_COLUMNS.confirmedAt).setValue(new Date());
+      }
+      if (statusEdit || status !== 'جديد') syncOrderStage_(sourceRow);
+      if (statusEdit || status !== 'جديد') syncShippingQueue_(sourceRow);
+      if (statusEdit || statusChanged) {
+        refreshTelegramKeyboard_(sourceRow);
+        if (statusChanged) notifyTelegramStatus_(sourceRow);
+      }
+    }
   } finally {
     lock.releaseLock();
   }
@@ -530,6 +678,7 @@ function processStatusButton_(callback, token) {
   }
   sheet.getRange(row, ORDER_COLUMNS.status).setValue(next);
   syncOrderStage_(row);
+  syncShippingQueue_(row);
   refreshTelegramKeyboard_(row);
   answerCallbackSafely_(token, { callback_query_id: callback.id });
   notifyTelegramStatus_(row);
