@@ -1,0 +1,40 @@
+name: Wasl connectors
+on:
+  pull_request:
+    paths: ['apps-script/**', 'tests/**', 'wasl-connectors/**', '.github/workflows/wasl-connectors.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protocol:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/wasl-bridge.test.cjs
+      - run: node --input-type=module --check < wasl-connectors/whatsapp/scanner.js
+      - run: node --input-type=module --check < wasl-connectors/whatsapp/background.js
+      - run: node --input-type=module --check < wasl-connectors/whatsapp/popup.js
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wasl-connectors/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - run: gradle --no-daemon :app:assembleDebug :app:lintDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasl-android-test-apk
+          path: wasl-connectors/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
