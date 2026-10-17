@@ -5,9 +5,10 @@
  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
  <queries><package android:name="com.whatsapp.w4b"/><intent><action android:name="android.media.action.IMAGE_CAPTURE"/></intent></queries>
  <application android:label="وصل" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-  <activity android:name=".OrdersActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
-  <activity android:name=".MainActivity" android:exported="false"/>
-  <activity android:name=".PaidActivity" android:exported="false"/>
+  <activity android:name=".OrdersActivity" android:windowSoftInputMode="adjustResize" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
+  <activity android:name=".MainActivity" android:windowSoftInputMode="adjustResize" android:exported="false"/>
+  <activity android:name=".PermissionsActivity" android:exported="false"/>
+  <activity android:name=".PaidActivity" android:windowSoftInputMode="adjustResize" android:exported="false"/>
   <provider android:name=".CameraProvider" android:authorities="${applicationId}.camera" android:exported="false" android:grantUriPermissions="true"/>
   <service android:name=".PaidReader" android:label="وصل — قراءة Paid" android:exported="true" android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"><intent-filter><action android:name="android.accessibilityservice.AccessibilityService"/></intent-filter><meta-data android:name="android.accessibilityservice" android:resource="@xml/paid_reader"/></service>
   <service android:name=".PostalListener" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"><intent-filter><action android:name="android.service.notification.NotificationListenerService"/></intent-filter></service>
