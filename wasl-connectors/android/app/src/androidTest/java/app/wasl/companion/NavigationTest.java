@@ -3,7 +3,6 @@ package app.wasl.companion;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.os.Environment;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.*;
@@ -29,7 +28,7 @@ public class NavigationTest {
   menu.click();visible("الأذونات وحل مشاكل الوصول");screenshot("centered-navigation");
   visible("الأذونات وحل مشاكل الوصول").click();visible("تجهيز أذونات وصل");visible("ابدأ تجهيز الأذونات خطوة بخطوة");screenshot("permissions");
   visible("ابدأ تجهيز الأذونات خطوة بخطوة").click();visible("فتح طلب الإذن").click();
-  assertTrue("Android permission prompt or system settings",device.wait(Until.gone(By.pkg(app.getPackageName()).depth(0)),15000)||device.hasObject(By.pkg("com.android.permissioncontroller"))||device.hasObject(By.pkg("com.android.settings")));
+  assertTrue("Android permission prompt or system settings",device.wait(Until.hasObject(By.pkg("com.android.permissioncontroller")),15000)||device.hasObject(By.pkg("com.android.settings")));
   device.pressBack();
  }
 }
