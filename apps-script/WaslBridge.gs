@@ -8,23 +8,11 @@ function configureWaslReadOnlyBridge() {
   const props=PropertiesService.getScriptProperties();
   const secret=props.getProperty('WASL_SYNC_SECRET') || Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
   props.setProperty('WASL_SYNC_SECRET',secret);
+  props.setProperty('WASL_ALLOW_UPDATES','0');
   SpreadsheetApp.getUi().alert('مفتاح قراءة الشيت لوصل',secret+'\n\nانسخه في إعدادات وصل مع رابط /exec الحالي. اختار الجدولة من وصل. لا تنشر المفتاح ولا ترسله في تليجرام.',SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
-function configureWaslBridge() {
-  const ui = SpreadsheetApp.getUi();
-  const answer = ui.prompt('ربط وصل', 'رابط استقبال الشيت من صفحة الربط في تطبيق وصل (https://…macaly.app/api/integrations/sheets/events)', ui.ButtonSet.OK_CANCEL);
-  if (answer.getSelectedButton() !== ui.Button.OK) return;
-  const url = answer.getResponseText().trim();
-  if (!/^https:\/\/[a-z0-9-]+\.macaly\.app\/api\/integrations\/sheets\/events$/.test(url)) throw new Error('Use the exact HTTPS Macaly webhook URL');
-  const props = PropertiesService.getScriptProperties();
-  const secret = props.getProperty('WASL_SYNC_SECRET') || Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
-  waslEnsureColumns_();
-  props.setProperties({ WASL_WEBHOOK_URL: url, WASL_SYNC_SECRET: secret, WASL_DIRTY: '1' });
-  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'flushWaslSync')) ScriptApp.newTrigger('flushWaslSync').timeBased().everyMinutes(5).create();
-  // Show only to the person running setup. Do not log the secret or send it through Telegram.
-  ui.alert('مفتاح الربط — انسخه في صفحة الربط الخاصة بوصل', secret + '\n\nلا تضعه في اللاندنج بيدج. لم تتغير إعدادات البوت أو رابط الأوردرات.', ui.ButtonSet.OK);
-}
+function configureWaslBridge() { configureWaslReadOnlyBridge(); }
 
 function waslEnsureColumns_() {
   const sheet = ordersSheet_();
@@ -60,7 +48,7 @@ function waslCheckEnvelope_(e) {
 function waslISO_(value) {return value instanceof Date&&!isNaN(value.getTime())?value.toISOString():null;}
 function waslPhone_(value){let p=String(value||'').replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[\s()+.-]/g,'');if(p.startsWith('00'))p=p.slice(2);if(/^01[0125]\d{8}$/.test(p))p='20'+p.slice(1);if(/^1[0125]\d{8}$/.test(p))p='20'+p;return /^201[0125]\d{8}$/.test(p)?'+'+p:null;}
 function waslMapRow_(r) {
-  const statusMap={'جديد':'new','تم التأكيد':'confirmed','مؤكد':'confirmed','تم الشحن':'shipped','تم التوصيل':'delivered','تم التسليم':'delivered','مرتجع':'returned','ملغي':'cancelled'};
+  const statusMap={'جديد':'new','طلب جديد':'new','تم التأكيد':'confirmed','مؤكد':'confirmed','تم الشحن':'shipped','تم التوصيل':'delivered','تم التسليم':'delivered','مرتجع':'returned','ملغي':'cancelled'};
   const o={code:String(r[15]||''),name:String(r[0]||''),phone:normalizePhone_(r[1]),address:String(r[2]||''),governorate:String(r[3]||''),product:String(r[4]||''),amount:parseAmount_(r[10])||parseAmount_(r[5]),notes:String(r[6]||''),childName:String(r[9]||''),telegramMessageId:String(r[16]||''),status:r[17]?statusMap[String(r[17])]||'unknown':'new',rawStatus:String(r[17]||''),paidAmount:parseAmount_(r[18]),remainingAmount:parseAmount_(r[19]),confirmedAt:waslISO_(r[20]),createdAt:waslISO_(r[21]),tracking:String(r[22]||''),shippedAt:waslISO_(r[23]),deliveredAt:waslISO_(r[24]),carrierStatus:String(r[25]||''),collectedAmount:parseAmount_(r[26]),source:'google-sheets'};
   o.rawPhone=String(r[1]||'');o.phone=waslPhone_(r[1]);o.currency=/د\.ك|KWD/i.test(String(r[5]||''))?'KWD':'EGP';
   o.sourceVersion=waslHex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,JSON.stringify(o)));
@@ -76,6 +64,7 @@ function waslApi_(envelope) {
   try {
     const payload=waslCheckEnvelope_(envelope);
     if(envelope.operation==='ping')return waslJSON_({ok:true,protocol:1,source:'google-sheets'});
+    if(envelope.operation==='update'&&PropertiesService.getScriptProperties().getProperty('WASL_ALLOW_UPDATES')!=='1')return waslJSON_({ok:false,error:'Bridge is read-only'});
     const lock=LockService.getScriptLock();lock.waitLock(30000);
     try {
       if(envelope.operation==='snapshot')return waslJSON_({ok:true,...waslSnapshot_()});
