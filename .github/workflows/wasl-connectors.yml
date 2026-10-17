@@ -43,3 +43,33 @@ jobs:
           path: wasl-connectors/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
+      - name: Enable KVM for Android UI verification
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Verify large menu and permission handoff on Android 15
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_2
+          working-directory: wasl-connectors/android
+          disable-animations: true
+          script: |
+            adb shell wm size 720x1280
+            adb shell wm density 320
+            gradle --no-daemon :app:connectedDebugAndroidTest
+            adb pull /sdcard/Download/wasl-ui-proof ui-proof
+      - name: Collect UI verification screenshots
+        if: always()
+        run: adb pull /sdcard/Download/wasl-ui-proof ui-proof || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wasl-android-ui-proof
+          path: |
+            wasl-connectors/android/ui-proof
+            wasl-connectors/android/app/build/reports/androidTests
+            wasl-connectors/android/app/build/outputs/androidTest-results
+          if-no-files-found: ignore
