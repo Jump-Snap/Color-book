@@ -32,11 +32,15 @@ public class OrdersActivity extends Activity {
     try{startActivityForResult(chooser,830);}catch(Exception e){upload.onReceiveValue(null);upload=null;Toast.makeText(OrdersActivity.this,"تعذر فتح اختيار الملفات",Toast.LENGTH_LONG).show();}return true;
    }
   });
+  if(android.os.Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::navigateBack);
   if(state==null)web.loadUrl(HOME);else{camera=state.getParcelable("camera");web.restoreState(state);}
  }
  private void add(LinearLayout row,String text,Runnable action){Button b=new Button(this);b.setText(text);b.setTextSize(12);b.setOnClickListener(v->action.run());row.addView(b,new LinearLayout.LayoutParams(0,-2,1));}
  @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request!=830||upload==null)return;Uri[] values=null;if(result==RESULT_OK){if(data!=null&&data.getClipData()!=null){int count=Math.min(30,data.getClipData().getItemCount());values=new Uri[count];for(int i=0;i<count;i++)values[i]=data.getClipData().getItemAt(i).getUri();}else if(data!=null&&data.getData()!=null)values=new Uri[]{data.getData()};else if(camera!=null){try{File f=CameraProvider.file(this,camera);if(f.length()>0)values=new Uri[]{camera};}catch(Exception ignored){}}}upload.onReceiveValue(values);upload=null;camera=null;}
  @Override protected void onSaveInstanceState(Bundle state){super.onSaveInstanceState(state);web.saveState(state);state.putParcelable("camera",camera);}
- @Override public void onBackPressed(){if(web.canGoBack())web.goBack();else super.onBackPressed();}
+ // Android 33+ uses OnBackInvokedDispatcher above; this override serves API 26–32 only.
+ @android.annotation.SuppressLint("GestureBackNavigation")
+ @Override public void onBackPressed(){navigateBack();}
+ private void navigateBack(){if(web.canGoBack())web.goBack();else finish();}
  @Override protected void onDestroy(){if(upload!=null)upload.onReceiveValue(null);web.destroy();super.onDestroy();}
 }
