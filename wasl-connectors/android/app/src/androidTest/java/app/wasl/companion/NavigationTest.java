@@ -17,7 +17,7 @@ public class NavigationTest {
  private final Context app=InstrumentationRegistry.getInstrumentation().getTargetContext();
  private final UiDevice device=UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
  private UiObject2 visible(String text){UiObject2 v=device.wait(Until.findObject(By.text(text)),15000);assertNotNull("Missing: "+text,v);return v;}
- private void screenshot(String name){File dir=new File(app.getExternalFilesDir(null),"proof");dir.mkdirs();assertTrue(device.takeScreenshot(new File(dir,name+".png")));}
+ private void screenshot(String name) throws Exception {device.executeShellCommand("mkdir -p /sdcard/Download/wasl-ui-proof");device.executeShellCommand("screencap -p /sdcard/Download/wasl-ui-proof/"+name+".png");}
  @Test public void menuAndPermissionHandoff() throws Exception {
   SyncClient.prefs(app).edit().putBoolean("permissionIntro4",true).commit();
   device.setOrientationNatural();

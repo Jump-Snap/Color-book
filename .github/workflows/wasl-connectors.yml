@@ -60,10 +60,10 @@ jobs:
             adb shell wm size 720x1280
             adb shell wm density 320
             gradle --no-daemon :app:connectedDebugAndroidTest
-            adb pull /sdcard/Android/data/app.wasl.companion/files/proof ui-proof
+            adb pull /sdcard/Download/wasl-ui-proof ui-proof
       - name: Collect UI verification screenshots
         if: always()
-        run: adb pull /sdcard/Android/data/app.wasl.companion/files/proof ui-proof || true
+        run: adb pull /sdcard/Download/wasl-ui-proof ui-proof || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
