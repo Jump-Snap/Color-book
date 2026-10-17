@@ -2,6 +2,15 @@
 // Never put WASL_SYNC_SECRET or a bot token into index.html or a public repository.
 const WASL_EXTRA_COLUMNS = { tracking: 23, shippedAt: 24, deliveredAt: 25, carrierStatus: 26, collected: 27 };
 
+// Current Macaly release pulls signed snapshots from Convex on a configurable schedule.
+// This setup leaves the landing page endpoint, Telegram and sheet columns unchanged.
+function configureWaslReadOnlyBridge() {
+  const props=PropertiesService.getScriptProperties();
+  const secret=props.getProperty('WASL_SYNC_SECRET') || Utilities.getUuid().replace(/-/g,'')+Utilities.getUuid().replace(/-/g,'');
+  props.setProperty('WASL_SYNC_SECRET',secret);
+  SpreadsheetApp.getUi().alert('مفتاح قراءة الشيت لوصل',secret+'\n\nانسخه في إعدادات وصل مع رابط /exec الحالي. اختار الجدولة من وصل. لا تنشر المفتاح ولا ترسله في تليجرام.',SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
 function configureWaslBridge() {
   const ui = SpreadsheetApp.getUi();
   const answer = ui.prompt('ربط وصل', 'رابط استقبال الشيت من صفحة الربط في تطبيق وصل (https://…macaly.app/api/integrations/sheets/events)', ui.ButtonSet.OK_CANCEL);

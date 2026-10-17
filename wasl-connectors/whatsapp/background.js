@@ -1,6 +1,6 @@
 import {scanPaid} from './scanner.js';
 let running=false;
-function originOf(value){const url=new URL(value);if(url.protocol!=='https:'||!/^[-a-z0-9]+\.macaly\.app$/i.test(url.hostname)||url.username||url.password)throw Error('اكتب رابط تطبيق وصل المنشور على macaly.app');return url.origin;}
+function originOf(value){const url=new URL(value);if(url.protocol!=='https:'||!/^[a-z0-9-]+(?:\.[a-z0-9-]+)?\.convex\.site$/i.test(url.hostname)||url.username||url.password||url.port||url.search||url.hash||url.pathname!=='/')throw Error('انسخ رابط بوابة الأجهزة من إعدادات وصل');return url.origin;}
 export async function collect(){
  if(running)throw Error('القراءة شغالة بالفعل');running=true;
  try{
