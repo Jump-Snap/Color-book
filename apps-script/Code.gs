@@ -120,6 +120,7 @@ function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) throw new Error('Empty request');
     const order = JSON.parse(e.postData.contents);
+    if (order.action === 'wasl') return waslApi_(order);
     if (order.action === 'confirmDepositWebApp') return confirmDepositWebApp_(order);
     const required = ['name', 'phone', 'address', 'governorate', 'package', 'totalPrice'];
     required.forEach(key => { if (!String(order[key] || '').trim()) throw new Error('Missing ' + key); });
@@ -153,6 +154,7 @@ function doPost(e) {
       sheet.getRange(row, 2).setNumberFormat('@');
       sheet.getRange(row, ORDER_COLUMNS.orderId, 1, 2).setNumberFormat('@');
       sheet.getRange(row, 1, 1, cells.length).setValues([cells]);
+      if (typeof waslMarkDirty_ === 'function') waslMarkDirty_();
 
       // The current public site still sends its own Telegram message. It does
       // not include orderId; only the updated site does. Avoid duplicate alerts
@@ -447,6 +449,7 @@ function stageRowFromOrder_(sheet, row) {
 }
 
 function syncOrderStage_(row) {
+  if (typeof waslMarkDirty_ === 'function') waslMarkDirty_();
   const source = ordersSheet_();
   const id = String(source.getRange(row, ORDER_COLUMNS.orderId).getDisplayValue() || '');
   if (!id) return;
@@ -820,4 +823,3 @@ function telegramCall_(token, method, payload) {
 function textResponse_(text) {
   return ContentService.createTextOutput(text).setMimeType(ContentService.MimeType.TEXT);
 }
-
