@@ -20,6 +20,7 @@ function waslPushApi_(r){try{
  const cache=CacheService.getScriptCache();try{if(cache.get('push-nonce:'+nonce))return waslPushJson_({ok:false,error:'replay'});cache.put('push-nonce:'+nonce,'1',600);}finally{lock.releaseLock();}
  const data=JSON.parse(payload),note=data.notification;
  if(!Array.isArray(data.targets)||data.targets.length>20||!data.targets.every(h=>typeof h==='string'&&/^[a-f0-9]{64}$/.test(h))||!note||!/^\d{1,16}$/.test(String(note.id))||typeof note.title!=='string'||note.title.length>200||typeof note.body!=='string'||note.body.length>800)return waslPushJson_({ok:false,error:'invalid_payload'});
+ if(data.validateOnly===true){if(data.targets.length)return waslPushJson_({ok:false,error:'invalid_probe'});const token=waslPushAccessToken_();const probe=UrlFetchApp.fetch('https://fcm.googleapis.com/v1/projects/'+token.project+'/messages:send',{method:'post',contentType:'application/json',headers:{Authorization:'Bearer '+token.value},payload:JSON.stringify({validate_only:true,message:{topic:'wasl-setup-validation',data:{id:'setup',title:'اختبار',body:'تحقق بدون إرسال'}}}),followRedirects:false,muteHttpExceptions:true});return waslPushJson_({ok:probe.getResponseCode()===200,validated:true,status:probe.getResponseCode(),notificationSent:false});}
  return waslPushJson_(waslPushSend_(data.targets,note));
  }catch(e){return waslPushJson_({ok:false,error:'relay_error',retryAfter:60});}}
 function waslPushRegister_(r){

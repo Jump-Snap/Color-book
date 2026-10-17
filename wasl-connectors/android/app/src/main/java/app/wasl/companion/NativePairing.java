@@ -41,7 +41,7 @@ final class NativePairing {
  void start(){
   if(!supported){Toast.makeText(activity,"حدّث Android System WebView لتفعيل الربط المباشر",Toast.LENGTH_LONG).show();return;}
   if(!trusted(web.getUrl())){Toast.makeText(activity,"افتح وصل وسجّل الدخول أولًا",Toast.LENGTH_LONG).show();return;}
-  if(verifying)return;requestId=UUID.randomUUID().toString();deadline=System.currentTimeMillis()+120000;
+  if(verifying)return;requestId=UUID.randomUUID().toString();deadline=System.currentTimeMillis()+300000;
   String id=JSONObject.quote(requestId);
   web.evaluateJavascript("(()=>{window.__waslPairRequestId="+id+";const b=[...document.querySelectorAll('nav button')].find(x=>['الإعدادات والربط','الإعدادات'].includes(x.textContent.trim()));if(!b){window.WaslDevice.postMessage(JSON.stringify({type:'pairError',requestId:"+id+"}));return;}b.click();setTimeout(()=>window.dispatchEvent(new CustomEvent('wasl-pair-request',{detail:{requestId:"+id+"}})),700);})()",null);
   Toast.makeText(activity,"اضغط «ربط هذا الهاتف» في صفحة وصل للموافقة",Toast.LENGTH_LONG).show();
