@@ -22,6 +22,7 @@ public class PostalListener extends NotificationListenerService {
    byte[] hash=MessageDigest.getInstance("SHA-256").digest(raw.getBytes(StandardCharsets.UTF_8));StringBuilder id=new StringBuilder();for(byte b:hash)id.append(String.format("%02x",b&255));
    JSONObject event=new JSONObject().put("eventId",id.toString()).put("sender",sender).put("text",text).put("receivedAt",java.time.Instant.ofEpochMilli(sbn.getPostTime()).toString());
    SyncClient.enqueue(getApplicationContext(),event);
+   if(SyncClient.prefs(this).getBoolean("livePostal",true))new Thread(()->SyncClient.sync(getApplicationContext())).start();
   }catch(Exception ignored){/* Never log private SMS content or authentication data. */}
  }
 }

@@ -13,14 +13,15 @@ import java.util.UUID;
 /** Private web workspace; camera/file permissions stay with Android's system picker. */
 public class OrdersActivity extends Activity {
  private static final String HOME="https://laqexg5wjrd9szk3v5b4xglm.macaly.app/";
- private WebView web; private ValueCallback<Uri[]> upload; private Uri camera;
- @Override public void onCreate(Bundle state){super.onCreate(state);
+ private boolean pendingPair; private NativePairing pairing; private WebView web; private ValueCallback<Uri[]> upload; private Uri camera;
+ @Override public void onCreate(Bundle state){super.onCreate(state);pendingPair=getIntent().getBooleanExtra("pair",false);
   LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
   web=new WebView(this);body.addView(web,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout menuArea=new LinearLayout(this);menuArea.setOrientation(LinearLayout.VERTICAL);int gap=AppUi.dp(this,20);menuArea.setPadding(gap,AppUi.dp(this,8),gap,AppUi.dp(this,8));AppUi.button(this,menuArea,"القائمة — الربط والأذونات",this::openMenu);body.addView(menuArea);AppUi.install(this,body);
+  pairing=new NativePairing(this,web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(true);web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
   CookieManager.getInstance().setAcceptCookie(true);CookieManager.getInstance().setAcceptThirdPartyCookies(web,false);
-  web.setWebViewClient(new WebViewClient(){@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if("https".equals(u.getScheme())&&"laqexg5wjrd9szk3v5b4xglm.macaly.app".equals(u.getHost()))return false;if("https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}return true;}});
+  web.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String url){if(pendingPair&&NativePairing.trusted(url)){pendingPair=false;v.post(()->pairing.start());}}@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if("https".equals(u.getScheme())&&"laqexg5wjrd9szk3v5b4xglm.macaly.app".equals(u.getHost()))return false;if("https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}return true;}});
   web.setWebChromeClient(new WebChromeClient(){
    @Override public void onPermissionRequest(PermissionRequest request){request.deny();}
    @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
@@ -34,12 +35,14 @@ public class OrdersActivity extends Activity {
   });
   if(android.os.Build.VERSION.SDK_INT>=33)getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,this::navigateBack);
   if(state==null)web.loadUrl(HOME);else{camera=state.getParcelable("camera");web.restoreState(state);}
-  if(state==null&&!SyncClient.prefs(this).getBoolean("permissionIntro4",false)){SyncClient.prefs(this).edit().putBoolean("permissionIntro4",true).apply();new android.app.AlertDialog.Builder(this).setTitle("جهّز أذونات وصل").setMessage("صفحة واحدة لتفعيل تنبيهات الطلبات وقراءة إشعارات البريد وقائمة Paid. يمكن الرجوع لها من زر القائمة الكبير أسفل التطبيق.").setPositiveButton("تجهيز الأذونات",(d,w)->startActivity(new Intent(this,PermissionsActivity.class))).setNegativeButton("لاحقًا",null).show();}
+
  }
  private void openMenu(){
   LinearLayout list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);list.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);int p=AppUi.dp(this,20);list.setPadding(p,p,p,p);
   ScrollView menuScroll=new ScrollView(this);menuScroll.addView(list);
   android.app.AlertDialog dialog=new android.app.AlertDialog.Builder(this).setTitle("قائمة وصل").setView(menuScroll).setNegativeButton("إغلاق",null).create();
+  AppUi.button(this,list,"ربط هذا الهاتف تلقائيًا",()->{dialog.dismiss();pairing.start();});
+  AppUi.button(this,list,"رسائل البريد القديمة",()->{dialog.dismiss();startActivity(new Intent(this,PostalHistoryActivity.class));});
   AppUi.button(this,list,"الطلبات",()->{dialog.dismiss();web.loadUrl(HOME);});
   AppUi.button(this,list,"الأذونات وحل مشاكل الوصول",()->{dialog.dismiss();startActivity(new Intent(this,PermissionsActivity.class));});
   AppUi.button(this,list,"ربط واتساب وقراءة Paid",()->{dialog.dismiss();startActivity(new Intent(this,PaidActivity.class));});
@@ -52,5 +55,6 @@ public class OrdersActivity extends Activity {
  @android.annotation.SuppressLint("GestureBackNavigation")
  @Override public void onBackPressed(){navigateBack();}
  private void navigateBack(){if(web.canGoBack())web.goBack();else finish();}
- @Override protected void onDestroy(){if(upload!=null)upload.onReceiveValue(null);web.destroy();super.onDestroy();}
+ @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);if(intent.getBooleanExtra("pair",false))web.post(()->pairing.start());}
+ @Override protected void onDestroy(){pairing.clear();if(upload!=null)upload.onReceiveValue(null);web.destroy();super.onDestroy();}
 }
