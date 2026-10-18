@@ -26,9 +26,22 @@ public class NavigationTest {
   assertTrue("Left edge clearance",r.left>=19*density);assertTrue("Right edge clearance",device.getDisplayWidth()-r.right>=19*density);
   assertTrue("Large tap height",r.height()>=59*density);assertTrue("Above gesture area",device.getDisplayHeight()-r.bottom>=8*density);screenshot("orders-menu");
   menu.click();visible("الأذونات وحل مشاكل الوصول");screenshot("centered-navigation");
-  visible("الأذونات وحل مشاكل الوصول").click();visible("تجهيز أذونات وصل");visible("ابدأ تجهيز الأذونات خطوة بخطوة");screenshot("permissions");
-  visible("ابدأ تجهيز الأذونات خطوة بخطوة").click();visible("فتح طلب الإذن").click();
-  assertTrue("Android permission prompt or system settings",device.wait(Until.hasObject(By.pkg("com.android.permissioncontroller")),15000)||device.hasObject(By.pkg("com.android.settings")));
+  visible("الأذونات وحل مشاكل الوصول").click();visible("تشغيل وصل على الموبايل");visible("تفعيل الأذونات المطلوبة بالترتيب");screenshot("permissions");
+  visible("تفعيل الأذونات المطلوبة بالترتيب").click();
+  assertTrue("Android permission prompt or system settings",device.wait(Until.hasObject(By.pkg(java.util.regex.Pattern.compile("(com.android|com.google.android).permissioncontroller"))),15000)||device.hasObject(By.pkg("com.android.settings")));
   device.pressBack();
+ }
+ @Test public void postalFiltersAndPairingOrigins(){
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم تسليم الشحنة EN١٢٣٤٥٦٧٨٩EG"));
+  assertTrue(PostalHistoryActivity.postal("Egypt-Post","EN123456789EG تم إنشاء الشحنة"));
+  assertFalse(PostalHistoryActivity.postal("Bank","EN123456789EG"));
+  assertFalse(PostalHistoryActivity.postal("EGYPTPOST","رصيد أو رقم غير متعلق بالشحن 123456"));
+  assertTrue(NativePairing.trusted("https://laqexg5wjrd9szk3v5b4xglm.macaly.app/"));
+  for(String url:new String[]{"http://laqexg5wjrd9szk3v5b4xglm.macaly.app/","https://laqexg5wjrd9szk3v5b4xglm.macaly.app.evil.example/","https://evil@laqexg5wjrd9szk3v5b4xglm.macaly.app/","https://laqexg5wjrd9szk3v5b4xglm.macaly.app:444/","file:///tmp/app","about:blank"})assertFalse(url,NativePairing.trusted(url));
+ }
+ @Test public void historicalMessagesHaveNoCodeEntry() throws Exception {
+  app.startActivity(new Intent(app,PostalHistoryActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+  visible("رسائل البريد القديمة");visible("اقرأ رسائل البريد القديمة من الموبايل");
+  assertFalse("No pasted pairing tokens",device.hasObject(By.clazz("android.widget.EditText")));screenshot("old-postal-messages");
  }
 }

@@ -1,0 +1,7 @@
+<resources>
+ <string name="wasl_firebase_project_id" translatable="false">wasl-orders-ahmed-20261017</string>
+ <string name="wasl_firebase_app_id" translatable="false">1:268056511325:android:d49834a82eae3976a89eb4</string>
+ <string name="wasl_firebase_sender_id" translatable="false">268056511325</string>
+ <string name="wasl_firebase_api_key" translatable="false">AIzaSyB1Br2bC9f1fwR-RFOgOTqUQVLnsFkl2JU</string>
+ <string name="wasl_push_relay_url" translatable="false">https://script.google.com/macros/s/AKfycbx-8gAUI_Q-JeuXTQK2GadDSF8XzJoc2w07xu2QaUlS7DtwbzFq-QfjNbwzi3r8XMfy/exec</string>
+</resources>

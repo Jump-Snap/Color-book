@@ -3,9 +3,14 @@
  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+ <uses-permission android:name="android.permission.READ_SMS"/>
+ <uses-feature android:name="android.hardware.telephony" android:required="false"/>
  <queries><package android:name="com.whatsapp.w4b"/><intent><action android:name="android.media.action.IMAGE_CAPTURE"/></intent></queries>
- <application android:label="وصل" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
-  <activity android:name=".OrdersActivity" android:windowSoftInputMode="adjustResize" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
+ <application android:name=".WaslApplication" android:label="وصل" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
+  <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false"/>
+  <service android:name=".WaslMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT"/></intent-filter></service>
+  <activity android:name=".PostalHistoryActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>
+  <activity android:name=".OrdersActivity" android:launchMode="singleTop" android:windowSoftInputMode="adjustResize" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
   <activity android:name=".MainActivity" android:windowSoftInputMode="adjustResize" android:exported="false"/>
   <activity android:name=".PermissionsActivity" android:exported="false"/>
   <activity android:name=".PaidActivity" android:windowSoftInputMode="adjustResize" android:exported="false"/>

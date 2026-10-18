@@ -41,7 +41,7 @@ public final class SyncClient {
    if(canNotify)for(int page=0;page<10;page++){
     JSONObject alerts=request(base,token,"/api/integrations/devices/alerts?cursor="+java.net.URLEncoder.encode(p.getString("alertsCursor","0"),"UTF-8"),null);
     JSONArray list=alerts.optJSONArray("alerts");if(list==null||list.length()>50)throw new Exception("قائمة تنبيهات غير صالحة");
-    for(int i=0;i<list.length();i++){JSONObject a=list.getJSONObject(i);manager.notify(a.getString("id").hashCode(),new Notification.Builder(c,"wasl-delays").setSmallIcon(android.R.drawable.ic_dialog_info).setContentTitle(a.optString("title","وصل — طلبات تحتاج متابعة")).setContentText(a.optString("body")).setAutoCancel(true).build());}
+    for(int i=0;i<list.length();i++){JSONObject a=list.getJSONObject(i);PushClient.display(c,a.getString("id"),a.optString("title","وصل — طلبات تحتاج متابعة"),a.optString("body"));}
     String next=alerts.getString("cursor");if(!next.matches("[0-9]+"))throw new Exception("مؤشر تنبيهات غير صالح");p.edit().putString("alertsCursor",next).apply();if(!alerts.optBoolean("hasMore"))break;
    }
    p.edit().putString("lastStatus","تم الاتصال والمزامنة بنجاح").putLong("lastSync",System.currentTimeMillis()).apply();return true;

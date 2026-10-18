@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/wasl-bridge.test.cjs
+      - run: node tests/wasl-push.test.cjs
       - run: node --input-type=module --check < wasl-connectors/whatsapp/scanner.js
       - run: node --input-type=module --check < wasl-connectors/whatsapp/background.js
       - run: node --input-type=module --check < wasl-connectors/whatsapp/popup.js
