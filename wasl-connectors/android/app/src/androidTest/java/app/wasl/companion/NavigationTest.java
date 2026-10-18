@@ -44,4 +44,17 @@ public class NavigationTest {
   visible("رسائل البريد القديمة");visible("اقرأ رسائل البريد القديمة من الموبايل");
   assertFalse("No pasted pairing tokens",device.hasObject(By.clazz("android.widget.EditText")));screenshot("old-postal-messages");
  }
+ @Test public void historicalPreviewRetainsMoreThanFiveHundredAndPages() throws Exception {
+  new File(app.getFilesDir(),"postal-history.json").delete();
+  org.json.JSONArray rows=new org.json.JSONArray();
+  for(int i=0;i<625;i++)rows.put(new org.json.JSONObject().put("eventId","fixture-"+i).put("receivedAt","2020-01-01T00:00:00Z").put("text","رسالة اختبار "+i));
+  SyncClient.prefs(app).edit().putString("postalHistoryPreview",rows.toString()).commit();
+  app.startActivity(new Intent(app,PostalHistoryActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK));
+  assertNotNull(device.wait(Until.findObject(By.textContains("625 رسالة بريد في المعاينة")),15000));
+  new UiScrollable(new UiSelector().scrollable(true)).scrollTextIntoView("الرسائل التالية");
+  visible("الرسائل التالية").click();
+  assertNotNull(device.wait(Until.findObject(By.textStartsWith("عرض 51 — 100 من 625")),5000));
+  screenshot("history-pages");
+  SyncClient.prefs(app).edit().remove("postalHistoryPreview").commit();
+ }
 }
