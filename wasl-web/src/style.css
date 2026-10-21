@@ -1174,3 +1174,31 @@ footer {
     height: 20px;
   }
 }
+@media (max-width: 700px) {
+  .sidebar {
+    padding-bottom: 12px;
+  }
+  nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
+    gap: 7px;
+    margin-top: 16px;
+    padding-bottom: 0;
+  }
+  nav button {
+    min-width: 0;
+    width: 100%;
+    min-height: 68px;
+    flex-direction: column;
+    gap: 5px;
+    padding: 9px 4px;
+    white-space: normal;
+    text-align: center;
+    font-size: 11px;
+    border: 1px solid #eef2ed;
+  }
+  nav button.active {
+    border-color: #d3e5d8;
+  }
+}

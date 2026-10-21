@@ -365,6 +365,13 @@ export function Integrations({
           </form>
         </section>
       )}
+      <section className="panel padded section-gap">
+        <h2>الحساب</h2>
+        <p className="muted">
+          جلسة دخولك محفوظة على الجهاز. للخروج أو الدخول بمستخدم تاني:
+        </p>
+        <button onClick={() => void db.auth.signOut()}>تسجيل الخروج</button>
+      </section>
     </>
   );
 }
