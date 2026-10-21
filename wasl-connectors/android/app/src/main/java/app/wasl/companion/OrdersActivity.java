@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /** Private web workspace; camera/file permissions stay with Android's system picker. */
 public class OrdersActivity extends Activity {
- private static final String HOME="https://laqexg5wjrd9szk3v5b4xglm.macaly.app/";
+ private static final String HOME=NativePairing.ORIGIN+"/";
  private boolean pendingPair; private NativePairing pairing; private WebView web; private ValueCallback<Uri[]> upload; private Uri camera;
  @Override public void onCreate(Bundle state){super.onCreate(state);pendingPair=getIntent().getBooleanExtra("pair",false);
   LinearLayout body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_RTL);
@@ -21,7 +21,7 @@ public class OrdersActivity extends Activity {
   pairing=new NativePairing(this,web);
   web.getSettings().setJavaScriptEnabled(true);web.getSettings().setDomStorageEnabled(true);web.getSettings().setAllowFileAccess(false);web.getSettings().setAllowContentAccess(true);web.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
   CookieManager.getInstance().setAcceptCookie(true);CookieManager.getInstance().setAcceptThirdPartyCookies(web,false);
-  web.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String url){if(pendingPair&&NativePairing.trusted(url)){pendingPair=false;v.post(()->pairing.start());}}@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if("https".equals(u.getScheme())&&"laqexg5wjrd9szk3v5b4xglm.macaly.app".equals(u.getHost()))return false;if("https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}return true;}});
+  web.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String url){if(pendingPair&&NativePairing.trusted(url)){pendingPair=false;v.post(()->pairing.start());}}@Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if(NativePairing.trusted(u.toString()))return false;if("https".equals(u.getScheme()))try{startActivity(new Intent(Intent.ACTION_VIEW,u));}catch(Exception ignored){}return true;}});
   web.setWebChromeClient(new WebChromeClient(){
    @Override public void onPermissionRequest(PermissionRequest request){request.deny();}
    @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
@@ -45,7 +45,6 @@ public class OrdersActivity extends Activity {
   AppUi.button(this,list,"رسائل البريد القديمة",()->{dialog.dismiss();startActivity(new Intent(this,PostalHistoryActivity.class));});
   AppUi.button(this,list,"الطلبات",()->{dialog.dismiss();web.loadUrl(HOME);});
   AppUi.button(this,list,"الأذونات وحل مشاكل الوصول",()->{dialog.dismiss();startActivity(new Intent(this,PermissionsActivity.class));});
-  AppUi.button(this,list,"ربط واتساب وقراءة Paid",()->{dialog.dismiss();startActivity(new Intent(this,PaidActivity.class));});
   AppUi.button(this,list,"ربط إشعارات الشحن",()->{dialog.dismiss();startActivity(new Intent(this,MainActivity.class));});
   dialog.show();
  }

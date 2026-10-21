@@ -1,0 +1,23 @@
+begin;
+create temporary table test_scope(w uuid,u uuid,other_w uuid);
+insert into test_scope values(gen_random_uuid(),gen_random_uuid(),gen_random_uuid());
+grant select on test_scope to authenticated,anon;
+insert into public.workspaces(id,name) select w,'Disposable isolation test' from test_scope union all select other_w,'Other disposable workspace' from test_scope;
+insert into auth.users(id) select u from test_scope;
+insert into public.profiles(id,workspace_id,username,role) select u,w,'test-'||u,'member' from test_scope;
+insert into public.settings(workspace_id) select w from test_scope;
+insert into public.orders(workspace_id,code,name,phone) select w,'TEST-OWN','Synthetic own order','+201000000001' from test_scope union all select other_w,'TEST-OTHER','Synthetic other order','+201000000002' from test_scope;
+select set_config('request.jwt.claim.sub',(select u::text from test_scope),true);
+set local role authenticated;
+do $$declare n int;begin
+ select count(*) into n from public.orders;if n<>1 then raise exception 'Workspace isolation failed';end if;
+ update public.settings set retention_days=7 where workspace_id=(select w from test_scope);get diagnostics n=row_count;if n<>0 then raise exception 'Member changed admin setting';end if;
+ begin perform public.runtime_secret('cron');raise exception 'Member read a secret';exception when insufficient_privilege then null;end;
+ if has_column_privilege(current_user,'public.devices','token_hash','select') or has_column_privilege(current_user,'public.devices','fcm_token','select') then raise exception 'Device credentials exposed';end if;
+ begin perform public.queue_deletion(array[]::uuid[],now()-interval '1 day',now());raise exception 'Member queued deletion';exception when raise_exception then if sqlerrm<>'Invalid deletion request' then raise;end if;end;
+end$$;
+set local role anon;
+do $$begin if exists(select 1 from public.orders) then raise exception 'Anonymous user read orders';end if;end$$;
+reset role;
+rollback;
+select 'Workspace, anonymous, member and credential isolation checks passed' as result;
