@@ -78,6 +78,27 @@ describe("reconciliation", () => {
     expect(
       postal("عميلنا العزيز تعذر تسليم الشحنة EN012345678EG")[0].kind,
     ).toBe("attempt"));
+  it("recognizes the postal COD deposit receipt when OCR loses the delivery line", () => {
+    expect(
+      postal("عميلنا العزيز ENO12345678EG وتم ايداع مبلغ 255 جنيه في حسابك")[0]
+        .kind,
+    ).toBe("delivered");
+    expect(
+      postal(
+        "عميلنا العزيز تم إنشاء الطلب ENO12345678EG وتم ايداع مبلغ 255 جنيه في حسابك",
+      )[0].kind,
+    ).toBe("created");
+    expect(
+      postal(
+        "عميلنا العزيز ENO12345678EG استرداد تم ايداع مبلغ 255 جنيه في حسابك",
+      )[0].kind,
+    ).toBe("unknown");
+    expect(
+      postal(
+        "عميلنا العزيز لم يتم ايداع مبلغ 255 جنيه في حسابك ENO12345678EG",
+      )[0].kind,
+    ).toBe("attempt");
+  });
   it("reads quoted sheet cells", () =>
     expect(csv('name,notes\n"A,B","line1\nline2"')[1]).toEqual([
       "A,B",

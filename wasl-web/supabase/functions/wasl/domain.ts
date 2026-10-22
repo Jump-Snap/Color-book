@@ -122,7 +122,10 @@ export function postal(text: string): Evidence[] {
         ? "delivered"
         : /تم\s+انشاء/.test(n)
           ? "created"
-          : "unknown";
+          : !/مرتجع|استرداد|رد المبلغ/.test(n) &&
+              /تم\s+ايداع.{0,100}جنيه\s+في\s+حسابك/.test(n)
+            ? "delivered"
+            : "unknown";
     return trackings(block).map((t) => ({
       tracking: t,
       kind,
