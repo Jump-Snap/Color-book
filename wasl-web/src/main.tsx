@@ -84,6 +84,18 @@ function App() {
     };
   }, [session?.user.id]);
   useEffect(() => {
+    if (!profile?.workspace_id) return;
+    const syncVisible = () => {
+      if (document.visibilityState === "visible") setRevision((n) => n + 1);
+    };
+    const timer = window.setInterval(syncVisible, 60000);
+    document.addEventListener("visibilitychange", syncVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", syncVisible);
+    };
+  }, [profile?.workspace_id]);
+  useEffect(() => {
     if (!notice) return;
     const id = setTimeout(() => setNotice(""), 6500);
     return () => clearTimeout(id);
@@ -189,16 +201,25 @@ function App() {
           )}{" "}
           {tab === "bills" && (
             <Bills
+              revision={revision}
               workspace={profile.workspace_id}
               notify={setNotice}
               refresh={refresh}
             />
           )}{" "}
           {tab === "messages" && (
-            <Messages notify={setNotice} refresh={refresh} />
+            <Messages
+              revision={revision}
+              notify={setNotice}
+              refresh={refresh}
+            />
           )}{" "}
           {tab === "settings" && (
-            <Integrations profile={profile} notify={setNotice} />
+            <Integrations
+              revision={revision}
+              profile={profile}
+              notify={setNotice}
+            />
           )}{" "}
           {tab === "storage" && (
             <Storage profile={profile} notify={setNotice} />

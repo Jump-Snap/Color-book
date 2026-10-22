@@ -166,10 +166,12 @@ type Draft = Page & {
   hash?: string;
 };
 export function Bills({
+  revision,
   workspace,
   notify,
   refresh,
 }: {
+  revision: number;
   workspace: string;
   notify: (s: string) => void;
   refresh: () => void;
@@ -517,7 +519,7 @@ export function Bills({
         </section>
       )}
       <Archive
-        revision={drafts.filter((d) => d.state === "saved").length}
+        revision={revision + drafts.filter((d) => d.state === "saved").length}
         notify={notify}
       />
     </>

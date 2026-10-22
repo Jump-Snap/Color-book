@@ -306,9 +306,17 @@ Deno.serve(async (req: Request) => {
         .toLowerCase();
       if (!/^[a-z0-9._-]{3,40}$/.test(username)) fail("اسم المستخدم غير صحيح");
       const email = username + "@users.wasl.invalid";
+      // One-time migration preserves an existing account's bcrypt password.
+      // New users still use Supabase's configured password policy.
+      const importedHash = b.passwordHash;
+      if (importedHash !== undefined &&
+          (typeof importedHash !== "string" ||
+           !/^\$2[aby]\$(1[0-6])\$[./A-Za-z0-9]{53}$/.test(importedHash) ||
+           b.password !== undefined))
+        fail("بيانات نقل الحساب غير صحيحة");
       const r = await db.auth.admin.createUser({
         email,
-        password: b.password,
+        ...(importedHash ? { password_hash: importedHash } : { password: b.password }),
         email_confirm: true,
       });
       if (r.error) fail("تعذر إعداد المدير", 500);

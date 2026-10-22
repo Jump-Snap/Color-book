@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Upload, MessageSquare, RefreshCw } from "lucide-react";
 import { db, call, date } from "./api";
 export function Messages({
+  revision,
   notify,
   refresh,
 }: {
+  revision: number;
   notify: (s: string) => void;
   refresh: () => void;
 }) {
@@ -34,7 +36,7 @@ export function Messages({
     return () => {
       active = false;
     };
-  }, [page, onlyPending, rev]);
+  }, [page, onlyPending, rev, revision]);
   async function run(fn: () => Promise<unknown>) {
     setBusy(true);
     try {

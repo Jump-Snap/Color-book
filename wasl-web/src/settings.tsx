@@ -15,9 +15,11 @@ declare global {
   }
 }
 export function Integrations({
+  revision,
   profile,
   notify,
 }: {
+  revision: number;
   profile: { workspace_id: string; role: string };
   notify: (s: string) => void;
 }) {
@@ -44,6 +46,8 @@ export function Integrations({
   }
   useEffect(() => {
     void load();
+  }, [revision]);
+  useEffect(() => {
     const h = (e: Event) => {
       const requestId = (e as CustomEvent).detail.requestId;
       setNonce(requestId);
