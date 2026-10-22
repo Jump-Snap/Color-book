@@ -2,6 +2,10 @@
 
 Arabic mobile-first order workspace using React/Vite, Supabase Auth/Postgres/private Storage, and Android SMS/notification forwarding. It does not call ChatGPT, Macaly, Gemini or WhatsApp. OCR runs on the device using Tesseract; PDF text is extracted before trying OCR.
 
+Production: https://wasl-orders-ahmed.pages.dev/
+
+Android 0.7 installer: https://wasl-orders-ahmed.pages.dev/downloads/wasl-android-0.7.0.apk
+
 ## Build
 
 Node 24 and pnpm 11.25 are used in CI.
@@ -33,7 +37,9 @@ The APK requires a verified production frontend origin:
 gradle -PwaslWebOrigin=https://your-site.pages.dev :app:assembleDebug :app:lintDebug
 ```
 
-CI reads the public repository variable `WASL_WEB_ORIGIN`. Until hosting is connected its fallback is `https://example.invalid`; that artifact is for native tests and **must not be shipped as a working release**. Pairing allows only the configured HTTPS origin and keeps passwords/session JWTs inside the WebView. WhatsApp accessibility classes and manifest service are removed.
+CI sets `WASL_WEB_ORIGIN` to the verified production origin `https://wasl-orders-ahmed.pages.dev`; the Gradle fallback uses the same origin. Pairing allows only the configured HTTPS origin and keeps passwords/session JWTs inside the WebView. WhatsApp accessibility classes and manifest service are removed. The published installer is built from commit `123497aede8d09fd7b34899fbd6a2883fd9c51c5`; its SHA-256 is `2f37760f5710453faadbcef24050532a7d600c0bb677efc84774709d28848e76`.
+
+For a static Pages deployment, build the frontend, copy the verified installer into `dist/downloads/wasl-android-0.7.0.apk`, and deploy `dist` using Wrangler on the `main` production branch. Never deploy private migration files, authentication sessions or customer exports.
 
 The new APK reads all selected historical postal SMS, previews them in pages of 50, and uploads acknowledged batches without discarding an interrupted import. New Google/Samsung SMS notifications support expanded message bundles, Arabic digits and listener reconnects. A 15-minute Android job retries offline queues, separately from immediate notification forwarding. Push is delivered through FCM when the UI is closed, subject to Android permissions, connectivity and force-stop/battery restrictions. Actual Samsung hardware delivery must be checked after installing the configured APK; emulator tests cannot prove this.
 
