@@ -34,10 +34,16 @@ public class NavigationTest {
  @Test public void postalFiltersAndPairingOrigins(){
   assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم تسليم الشحنة EN١٢٣٤٥٦٧٨٩EG"));
   assertTrue(PostalHistoryActivity.postal("Egypt-Post","EN123456789EG تم إنشاء الشحنة"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","عميلنا العزيز تم تسليم شحنتك رقم ENO12345678EG وتم إيداع مبلغ في حسابك"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم إنشاء الطلب EN\u200fO١٢٣٤٥٦٧٨EG"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم إنشاء الطلب en\nO1234 5678 EG"));
+  assertFalse(PostalHistoryActivity.postal("EGYPT POST","ENO123456789EG"));
+  assertFalse(PostalHistoryActivity.postal("EGYPT POST","ENO1234567EG"));
   assertFalse(PostalHistoryActivity.postal("Bank","EN123456789EG"));
   assertFalse(PostalHistoryActivity.postal("EGYPTPOST","رصيد أو رقم غير متعلق بالشحن 123456"));
-  assertTrue(NativePairing.trusted("https://laqexg5wjrd9szk3v5b4xglm.macaly.app/"));
-  for(String url:new String[]{"http://laqexg5wjrd9szk3v5b4xglm.macaly.app/","https://laqexg5wjrd9szk3v5b4xglm.macaly.app.evil.example/","https://evil@laqexg5wjrd9szk3v5b4xglm.macaly.app/","https://laqexg5wjrd9szk3v5b4xglm.macaly.app:444/","file:///tmp/app","about:blank"})assertFalse(url,NativePairing.trusted(url));
+  String home=NativePairing.ORIGIN;
+  assertTrue(NativePairing.trusted(home+"/"));
+  for(String url:new String[]{home.replace("https:","http:")+"/",home+".evil.example/","https://evil@"+android.net.Uri.parse(home).getHost()+"/",home+":444/","file:///tmp/app","about:blank"})assertFalse(url,NativePairing.trusted(url));
  }
  @Test public void historicalMessagesHaveNoCodeEntry() throws Exception {
   app.startActivity(new Intent(app,PostalHistoryActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));

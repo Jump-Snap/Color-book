@@ -18,21 +18,22 @@ import java.util.Set;
 public final class SyncClient {
  private static final Object QUEUE_LOCK=new Object();
  public static SharedPreferences prefs(Context c){return c.getSharedPreferences("wasl",Context.MODE_PRIVATE);}
- public static String origin(String input)throws Exception{URL u=new URL(input.trim());if(!u.getProtocol().equals("https")||!u.getHost().matches("[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)?\\.convex\\.site")||u.getUserInfo()!=null||u.getPort()!=-1||u.getQuery()!=null||u.getRef()!=null||!(u.getPath().isEmpty()||u.getPath().equals("/")))throw new Exception("انسخ رابط بوابة الأجهزة من إعدادات وصل");return "https://"+u.getHost();}
+ public static String origin(String input)throws Exception{URL u=new URL(input.trim());if(!u.getProtocol().equals("https")||!"suokxziofqqsqcnncepc.supabase.co".equals(u.getHost())||u.getUserInfo()!=null||u.getPort()!=-1||u.getQuery()!=null||u.getRef()!=null||!(u.getPath().isEmpty()||u.getPath().equals("/")))throw new Exception("رابط وصل غير صحيح");return "https://"+u.getHost();}
+ public static void schedule(Context c){android.app.job.JobScheduler job=(android.app.job.JobScheduler)c.getSystemService(Context.JOB_SCHEDULER_SERVICE);int minutes=prefs(c).getInt("minutes",15);if(minutes==0){job.cancel(5173);return;}job.schedule(new android.app.job.JobInfo.Builder(5173,new android.content.ComponentName(c,SyncJob.class)).setRequiredNetworkType(android.app.job.JobInfo.NETWORK_TYPE_ANY).setPeriodic(Math.max(15,minutes)*60000L).setPersisted(true).build());}
  public static void enqueue(Context c,JSONObject event)throws Exception{
   synchronized(QUEUE_LOCK){SharedPreferences p=prefs(c);JSONArray q=new JSONArray(p.getString("queue","[]"));for(int i=0;i<q.length();i++)if(q.getJSONObject(i).optString("eventId").equals(event.getString("eventId")))return;
-   if(q.length()>=500){p.edit().putString("lastStatus","وصل صندوق الانتظار إلى 500 رسالة. افتح التطبيق للمزامنة؛ لم نحذف الرسائل القديمة.").apply();return;}
+   
    q.put(event);p.edit().putString("queue",q.toString()).apply();}
  }
  public static JSONObject request(String base,String token,String path,JSONObject body)throws Exception{
-  HttpsURLConnection connection=(HttpsURLConnection)new URL(origin(base)+path).openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("Authorization","Bearer "+token);connection.setRequestProperty("Accept","application/json");
+  HttpsURLConnection connection=(HttpsURLConnection)new URL(origin(base)+path.replace("/api/integrations/devices/","/functions/v1/wasl/")).openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(15000);connection.setReadTimeout(20000);connection.setRequestProperty("Authorization","Bearer "+token);connection.setRequestProperty("Accept","application/json");
   try{if(body!=null){connection.setRequestMethod("POST");connection.setDoOutput(true);connection.setRequestProperty("Content-Type","application/json");try(var out=connection.getOutputStream()){out.write(body.toString().getBytes(StandardCharsets.UTF_8));}}
    int code=connection.getResponseCode();if(code!=200)throw new Exception("تعذر الاتصال أو رمز الاقتران غير صالح ("+code+")");String response;try(var in=connection.getInputStream()){java.io.ByteArrayOutputStream bytes=new java.io.ByteArrayOutputStream();byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1){bytes.write(buffer,0,n);if(bytes.size()>2000000)throw new Exception("Response too large");}response=bytes.toString("UTF-8");}JSONObject json=new JSONObject(response);if(!json.optBoolean("ok"))throw new Exception(json.optString("error","المنصة لم تؤكد الاستلام"));return json;
   }finally{connection.disconnect();}
  }
  public static boolean sync(Context c){
   SharedPreferences p=prefs(c);String base=p.getString("origin",""),token=p.getString("token","");if(base.isEmpty()||token.isEmpty())return false;
-  try{JSONArray batch=new JSONArray();synchronized(QUEUE_LOCK){JSONArray q=new JSONArray(p.getString("queue","[]"));for(int i=0;i<Math.min(50,q.length());i++)batch.put(q.getJSONObject(i));}
+  try{JSONArray batch=new JSONArray();synchronized(QUEUE_LOCK){JSONArray q=new JSONArray(p.getString("queue","[]"));for(int i=0;i<Math.min(200,q.length());i++)batch.put(q.getJSONObject(i));}
    if(batch.length()>0){JSONObject reply=request(base,token,"/api/integrations/devices/postal",new JSONObject().put("events",batch));JSONArray acknowledged=reply.optJSONArray("acknowledged");if(acknowledged==null)throw new Exception("لم تصل إيصالات حفظ الرسائل");Set<String> ids=new HashSet<>();for(int i=0;i<acknowledged.length();i++)ids.add(acknowledged.getString(i));
     synchronized(QUEUE_LOCK){JSONArray q=new JSONArray(p.getString("queue","[]")),remaining=new JSONArray();for(int i=0;i<q.length();i++)if(!ids.contains(q.getJSONObject(i).optString("eventId")))remaining.put(q.getJSONObject(i));p.edit().putString("queue",remaining.toString()).apply();}}
    boolean canNotify=Build.VERSION.SDK_INT<33||c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED;

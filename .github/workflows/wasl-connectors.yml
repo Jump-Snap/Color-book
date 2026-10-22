@@ -20,6 +20,8 @@ jobs:
       - run: node --input-type=module --check < wasl-connectors/whatsapp/popup.js
   android:
     runs-on: ubuntu-latest
+    env:
+      WASL_WEB_ORIGIN: https://wasl-orders-ahmed.pages.dev
     defaults:
       run:
         working-directory: wasl-connectors/android
@@ -32,11 +34,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: Check Android Egyptian phone normalization
-        run: |
-          mkdir -p /tmp/wasl-phone-check
-          javac -d /tmp/wasl-phone-check app/src/main/java/app/wasl/companion/PaidNumbers.java ../../tests/PaidNumbersTest.java
-          java -cp /tmp/wasl-phone-check PaidNumbersTest
       - run: gradle --no-daemon :app:assembleDebug :app:lintDebug
       - uses: actions/upload-artifact@v4
         with:

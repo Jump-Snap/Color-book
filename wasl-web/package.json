@@ -1,0 +1,29 @@
+{
+  "name": "wasl-independent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "node scripts/prepare-ocr.mjs && tsc -b && vite build",
+    "test": "vitest run",
+    "prepare:ocr": "node scripts/prepare-ocr.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.0",
+    "lucide-react": "^0.468.0",
+    "pdfjs-dist": "^5.4.624",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tesseract.js": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "vitest": "^3.2.0"
+  }
+}
