@@ -44,8 +44,13 @@ export function phones(s: string) {
     ),
   ];
 }
+function trackingText(s: string) {
+  return digits(s.normalize("NFKC"))
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, "")
+    .toUpperCase();
+}
 export function tracking(s: string) {
-  const t = digits(s).toUpperCase().replace(/\s/g, "");
+  const t = trackingText(s).replace(/\s/g, "");
   if (!/^[A-Z]{2}[0-9OIL]{9}EG$/.test(t)) return null;
   return (
     t.slice(0, 2) +
@@ -56,7 +61,11 @@ export function tracking(s: string) {
 export function trackings(s: string) {
   return [
     ...new Set(
-      (digits(s).match(/[A-Z]{2}[ \t]?(?:[0-9OIL][ \t]?){9}EG/gi) || [])
+      (
+        trackingText(s).match(
+          /(?<![A-Z0-9])[A-Z]{2}\s*(?:[0-9OIL]\s*){9}EG(?![A-Z0-9])/g,
+        ) || []
+      )
         .map(tracking)
         .filter((x): x is string => !!x),
     ),

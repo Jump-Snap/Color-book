@@ -4,7 +4,7 @@ Arabic mobile-first order workspace using React/Vite, Supabase Auth/Postgres/pri
 
 Production: https://wasl-orders-ahmed.pages.dev/
 
-Android 0.7 installer: https://wasl-orders-ahmed.pages.dev/downloads/wasl-android-0.7.0.apk
+Android 0.8 installer: https://wasl-orders-ahmed.pages.dev/downloads/wasl-android-0.8.0.apk
 
 ## Build
 
@@ -37,9 +37,9 @@ The APK requires a verified production frontend origin:
 gradle -PwaslWebOrigin=https://your-site.pages.dev :app:assembleDebug :app:lintDebug
 ```
 
-CI sets `WASL_WEB_ORIGIN` to the verified production origin `https://wasl-orders-ahmed.pages.dev`; the Gradle fallback uses the same origin. Pairing allows only the configured HTTPS origin and keeps passwords/session JWTs inside the WebView. WhatsApp accessibility classes and manifest service are removed. The published installer is built from commit `123497aede8d09fd7b34899fbd6a2883fd9c51c5`; its SHA-256 is `2f37760f5710453faadbcef24050532a7d600c0bb677efc84774709d28848e76`.
+CI sets `WASL_WEB_ORIGIN` to the verified production origin `https://wasl-orders-ahmed.pages.dev`; the Gradle fallback uses the same origin. Pairing allows only the configured HTTPS origin and keeps passwords/session JWTs inside the WebView. WhatsApp accessibility classes and manifest service are removed. Version 0.8 accepts the OCR letter O (zero) and I/L (one) only inside the nine-character numeric portion of postal codes. The Android prefilter supports these same variants, Unicode formatting marks and split lines, so valid notifications and historical SMS reach the server instead of being discarded. The original message remains available as evidence. Letter prefixes are never substituted, and malformed lengths are rejected. Native and PWA launcher icons share the parcel-and-check identity.
 
-For a static Pages deployment, build the frontend, copy the verified installer into `dist/downloads/wasl-android-0.7.0.apk`, and deploy `dist` using Wrangler on the `main` production branch. Never deploy private migration files, authentication sessions or customer exports.
+For a static Pages deployment, build the frontend, copy the verified installer into `dist/downloads/wasl-android-0.8.0.apk`, and deploy `dist` using Wrangler on the `main` production branch. Never deploy private migration files, authentication sessions or customer exports.
 
 The new APK reads all selected historical postal SMS, previews them in pages of 50, and uploads acknowledged batches without discarding an interrupted import. New Google/Samsung SMS notifications support expanded message bundles, Arabic digits and listener reconnects. A 15-minute Android job retries offline queues, separately from immediate notification forwarding. Push is delivered through FCM when the UI is closed, subject to Android permissions, connectivity and force-stop/battery restrictions. Actual Samsung hardware delivery must be checked after installing the configured APK; emulator tests cannot prove this.
 

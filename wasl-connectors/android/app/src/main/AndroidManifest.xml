@@ -6,7 +6,7 @@
  <uses-permission android:name="android.permission.READ_SMS"/>
  <uses-feature android:name="android.hardware.telephony" android:required="false"/>
  <queries><intent><action android:name="android.media.action.IMAGE_CAPTURE"/></intent></queries>
- <application android:name=".WaslApplication" android:label="وصل" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
+ <application android:name=".WaslApplication" android:label="وصل" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false" android:usesCleartextTraffic="false" android:supportsRtl="true">
   <meta-data android:name="firebase_messaging_auto_init_enabled" android:value="false"/>
   <service android:name=".WaslMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT"/></intent-filter></service>
   <activity android:name=".PostalHistoryActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>

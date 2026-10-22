@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   phone,
   tracking,
+  trackings,
   sheetStatus,
   advance,
   postal,
@@ -34,6 +35,38 @@ describe("reconciliation", () => {
   it("repairs OCR only inside numeric tracking portion", () => {
     expect(tracking("ENO12345678EG")).toBe("EN012345678EG");
     expect(tracking("EN012EG")).toBeNull();
+  });
+  it("reads ENO and EN0 identically in real SMS layouts without changing prefixes", () => {
+    for (const raw of [
+      "ENO12345678EG",
+      "en012345678eg",
+      "EN\u200fO١٢٣٤٥٦٧٨EG",
+      "EN\nO1234 5678 EG",
+    ])
+      expect(
+        trackings(
+          `عميلنا العزيز تم تسليم شحنتك رقم ${raw} وتم إيداع مبلغ في حسابك`,
+        ),
+      ).toEqual(["EN012345678EG"]);
+    expect(tracking("EBO12345678EG")).toBe("EB012345678EG");
+    expect(tracking("EN012345678EG")).not.toBe(tracking("EB012345678EG"));
+    for (const raw of [
+      "ENO1234567EG",
+      "ENO123456789EG",
+      "XENO12345678EG",
+      "ENO12345678EG1",
+    ])
+      expect(trackings(raw)).toEqual([]);
+    expect(trackings("ENO12345678EG EN012345678EG")).toEqual(["EN012345678EG"]);
+  });
+  it("keeps multiline deposit deliveries separate from order creation", () => {
+    const r = postal(
+      "عميلنا العزيز تم إنشاء الطلب الخاص بك رقم ENO12345678EG\nعميلنا العزيز\nتم تسليم شحنتك رقم ENO12345679EG\nوتم إيداع مبلغ 255 جنيه في حسابك",
+    );
+    expect(r.map((x) => [x.tracking, x.kind])).toEqual([
+      ["EN012345678EG", "created"],
+      ["EN012345679EG", "delivered"],
+    ]);
   });
   it("keeps created and delivered messages separate", () => {
     const r = postal(

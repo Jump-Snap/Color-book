@@ -34,6 +34,11 @@ public class NavigationTest {
  @Test public void postalFiltersAndPairingOrigins(){
   assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم تسليم الشحنة EN١٢٣٤٥٦٧٨٩EG"));
   assertTrue(PostalHistoryActivity.postal("Egypt-Post","EN123456789EG تم إنشاء الشحنة"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","عميلنا العزيز تم تسليم شحنتك رقم ENO12345678EG وتم إيداع مبلغ في حسابك"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم إنشاء الطلب EN\u200fO١٢٣٤٥٦٧٨EG"));
+  assertTrue(PostalHistoryActivity.postal("EGYPT POST","تم إنشاء الطلب en\nO1234 5678 EG"));
+  assertFalse(PostalHistoryActivity.postal("EGYPT POST","ENO123456789EG"));
+  assertFalse(PostalHistoryActivity.postal("EGYPT POST","ENO1234567EG"));
   assertFalse(PostalHistoryActivity.postal("Bank","EN123456789EG"));
   assertFalse(PostalHistoryActivity.postal("EGYPTPOST","رصيد أو رقم غير متعلق بالشحن 123456"));
   String home=NativePairing.ORIGIN;
