@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
  namespace 'app.wasl.companion'
  buildFeatures { buildConfig true }
- def waslOrigin = providers.gradleProperty('waslWebOrigin').orElse(providers.environmentVariable('WASL_WEB_ORIGIN')).getOrElse('https://example.invalid')
+ def waslOrigin = providers.gradleProperty('waslWebOrigin').orElse(providers.environmentVariable('WASL_WEB_ORIGIN')).getOrElse('https://wasl-orders-ahmed.pages.dev')
  if (!(waslOrigin ==~ /https:\/\/[a-zA-Z0-9.-]+/)) throw new GradleException('WASL_WEB_ORIGIN must be an HTTPS origin without a path')
  compileSdk 36
  defaultConfig { applicationId 'app.wasl.companion'; minSdk 26; targetSdk 36; versionCode 7; versionName '0.7.0'; testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'; buildConfigField 'String', 'WASL_WEB_ORIGIN', '"' + waslOrigin + '"' }

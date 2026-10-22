@@ -21,7 +21,7 @@ jobs:
   android:
     runs-on: ubuntu-latest
     env:
-      WASL_WEB_ORIGIN: ${{ vars.WASL_WEB_ORIGIN || 'https://example.invalid' }}
+      WASL_WEB_ORIGIN: https://wasl-orders-ahmed.pages.dev
     defaults:
       run:
         working-directory: wasl-connectors/android
